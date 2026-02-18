@@ -185,10 +185,46 @@
 <li>高吞吐不是只靠語法，而是整條鏈路一起優化。</li>
 </ol>
 <h2 id="統一心智模型"><a class="header" href="#統一心智模型">統一心智模型</a></h2>
-<pre><code class="language-text">請求 -&gt; 任務切分 -&gt; 排隊 -&gt; 執行 -&gt; 寫回資料
-           |         |       |
-         分工      背壓    一致性
-</code></pre>
+<div class="ascii-svg-wrap">
+<svg class="ascii-svg" xmlns="http://www.w3.org/2000/svg" width="468" height="84" viewBox="0 0 468 84" role="img" aria-label="ASCII diagram">
+<g stroke="currentColor" stroke-width="1.8" stroke-linecap="square" fill="none">
+</g>
+<g fill="currentColor" font-family="Noto Sans Mono CJK TC, Noto Sans Mono CJK SC, Noto Sans Mono CJK JP, Sarasa Mono TC, Cascadia Mono, JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace" font-size="16" text-rendering="geometricPrecision" xml:space="preserve">
+<text x="14" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">請</text>
+<text x="34" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">求</text>
+<text x="64" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">-</text>
+<text x="74" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">&gt;</text>
+<text x="94" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">任</text>
+<text x="114" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">務</text>
+<text x="134" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">切</text>
+<text x="154" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">分</text>
+<text x="184" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">-</text>
+<text x="194" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">&gt;</text>
+<text x="214" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">排</text>
+<text x="234" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">隊</text>
+<text x="264" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">-</text>
+<text x="274" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">&gt;</text>
+<text x="294" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">執</text>
+<text x="314" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">行</text>
+<text x="344" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">-</text>
+<text x="354" y="26" textLength="10" lengthAdjust="spacingAndGlyphs">&gt;</text>
+<text x="374" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">寫</text>
+<text x="394" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">回</text>
+<text x="414" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">資</text>
+<text x="434" y="26" textLength="20" lengthAdjust="spacingAndGlyphs">料</text>
+<text x="124" y="46" textLength="10" lengthAdjust="spacingAndGlyphs">|</text>
+<text x="224" y="46" textLength="10" lengthAdjust="spacingAndGlyphs">|</text>
+<text x="304" y="46" textLength="10" lengthAdjust="spacingAndGlyphs">|</text>
+<text x="104" y="66" textLength="20" lengthAdjust="spacingAndGlyphs">分</text>
+<text x="124" y="66" textLength="20" lengthAdjust="spacingAndGlyphs">工</text>
+<text x="204" y="66" textLength="20" lengthAdjust="spacingAndGlyphs">背</text>
+<text x="224" y="66" textLength="20" lengthAdjust="spacingAndGlyphs">壓</text>
+<text x="284" y="66" textLength="20" lengthAdjust="spacingAndGlyphs">一</text>
+<text x="304" y="66" textLength="20" lengthAdjust="spacingAndGlyphs">致</text>
+<text x="324" y="66" textLength="20" lengthAdjust="spacingAndGlyphs">性</text>
+</g>
+</svg>
+</div>
 <h2 id="語言對照最小表"><a class="header" href="#語言對照最小表">語言對照最小表</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>通用概念</th><th>Java</th><th>C/C++</th><th>Rust</th><th>Go</th></tr></thead><tbody>
 <tr><td>執行單元</td><td>Thread</td><td>std::thread/pthread</td><td>std::thread</td><td>goroutine</td></tr>
