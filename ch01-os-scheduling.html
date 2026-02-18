@@ -29,6 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/beautiful-mermaid.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -179,83 +180,84 @@
 <h2 id="11-計算機基礎對應-111112"><a class="header" href="#11-計算機基礎對應-111112">1.1 計算機基礎（對應 1.1.1~1.1.2）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-text">馮諾伊曼架構：CPU ↔ 記憶體 ↔ I/O
-
-  ┌──────────────────────────────────────────────────────────┐
-  │                        CPU                               │
-  │  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐  │
-  │  │ 控制單元  │  │ 算術邏輯  │  │      暫存器組         │  │
-  │  │  (CU)   │  │ 單元(ALU)│  │  R0 R1 R2 ... R15    │  │
-  │  └────┬─────┘  └────┬─────┘  └──────────────────────┘  │
-  └───────┼─────────────┼──────────────────────────────────┘
-          │             │
-          └──────┬───────┘
-                 │  系統匯流排（System Bus）
-    ┌────────────┴────────────────────────────┐
-    │                                         │
-    ▼                                         ▼
-┌──────────┐                          ┌──────────────┐
-│  記憶體   │                          │   I/O 裝置   │
-│  (RAM)   │                          │  磁碟/網路/鍵盤│
-└──────────┘                          └──────────────┘
-
-快取層次（速度由快到慢，容量由小到大）：
-
-  ┌─────────────────────────────────────────────────────────┐
-  │  速度: 最快 ◄──────────────────────────────────► 最慢   │
-  │  容量: 最小 ◄──────────────────────────────────► 最大   │
-  └─────────────────────────────────────────────────────────┘
-
-  ┌────────┐   ┌────────┐   ┌────────┐   ┌────────┐   ┌──────────┐   ┌──────┐
-  │Register│──▶│  L1$   │──▶│  L2$   │──▶│  L3$   │──▶│   RAM    │──▶│ Disk │
-  │  ~1ns  │   │  ~4ns  │   │ ~12ns  │   │ ~30ns  │   │ ~100ns   │   │~10ms │
-  │  &lt;1KB  │   │  64KB  │   │  512KB │   │   8MB  │   │  GB 級別  │   │ TB級 │
-  └────────┘   └────────┘   └────────┘   └────────┘   └──────────┘   └──────┘
-   核心獨享      核心獨享      核心獨享      插槽共享        DRAM         持久化
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["馮諾伊曼架構: CPU 記憶體 I/O"]
+  N2["CPU"]
+  N3["控制單元 算術邏輯 暫存器組"]
+  N4["(CU) 單元(ALU) R0 R1 R2 ... R15"]
+  N5["系統匯流排（System Bus）"]
+  N6["記憶體 I/O 裝置"]
+  N7["(RAM) 磁碟/網路/鍵盤"]
+  N8["快取層次（速度由快到慢，容量由小到大）"]
+  N9["速度: 最快 最慢"]
+  N10["容量: 最小 最大"]
+  N11["Register L1$ L2$ L3$ RAM Disk"]
+  N12["~1ns ~4ns ~12ns ~30ns ~100ns ~10ms"]
+  N13["&amp;lt;1KB 64KB 512KB 8MB GB 級別 TB級"]
+  N14["核心獨享 核心獨享 核心獨享 插槽共享 DRAM 持久化"]
+  N0 --&gt; N1
+  N1 --&gt; N2
+  N1 --&gt; N3
+  N1 --&gt; N4
+  N4 --&gt; N5
+  N0 --&gt; N6
+  N0 --&gt; N7
+  N0 --&gt; N8
+  N8 --&gt; N9
+  N8 --&gt; N10
+  N8 --&gt; N11
+  N8 --&gt; N12
+  N8 --&gt; N13
+  N13 --&gt; N14
 </code></pre>
 <p>重點：CPU 做計算，記憶體放資料，I/O 負責進出。</p>
 <p>白話例子：廚房裡，廚師=CPU，冰箱=記憶體，外送窗口=I/O。快取好比廚師的備料台，常用食材放在手邊，不用每次跑去冰箱。</p>
 <h2 id="12-多核與多-cpu對應-121125"><a class="header" href="#12-多核與多-cpu對應-121125">1.2 多核與多 CPU（對應 1.2.1~1.2.5）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-text">單核時間切片（Concurrency，並發但非並行）：
-
-時間軸 ──────────────────────────────────────────────►
-       ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┐
-Core0  │  T1 │  T2 │  T1 │  T3 │  T2 │  T1 │  T3 │
-       └─────┴─────┴─────┴─────┴─────┴─────┴─────┘
-        ▲                               ▲
-     Context Switch               Context Switch
-     （上下文切換，有額外成本）
-
-多核真並行（Parallelism）：
-
-時間軸 ──────────────────────────────────────────────►
-       ┌─────────────────────────────────────────┐
-Core0  │  T1 │  T1 │  T1 │  T1 │  T1 │  T1 │   │
-       ├─────────────────────────────────────────┤
-Core1  │  T2 │  T2 │  T2 │  T2 │  T2 │  T2 │   │
-       ├─────────────────────────────────────────┤
-Core2  │  T3 │  T3 │  T3 │  T3 │  T3 │  T3 │   │
-       ├─────────────────────────────────────────┤
-Core3  │  T4 │  T4 │  T4 │  T4 │  T4 │  T4 │   │
-       └─────────────────────────────────────────┘
-        真正同時執行，吞吐量 ≈ 單核 × 核心數
-
-NUMA 多插槽架構（跨 Socket 成本警示）：
-
-  ┌────────────── Socket 0 ──────────────┐   ┌────────────── Socket 1 ──────────────┐
-  │  ┌────────┐  ┌────────┐             │   │  ┌────────┐  ┌────────┐             │
-  │  │ Core0  │  │ Core1  │  ...        │   │  │ Core4  │  │ Core5  │  ...        │
-  │  └────────┘  └────────┘             │   │  └────────┘  └────────┘             │
-  │       └──────────┘                  │   │       └──────────┘                  │
-  │           L3 Cache (共享)            │   │           L3 Cache (共享)            │
-  │           Local RAM                 │   │           Local RAM                 │
-  └──────────────┬──────────────────────┘   └──────────────┬──────────────────────┘
-                 │                                         │
-                 └──────────── QPI / UPI 互連 ─────────────┘
-                               （跨 Socket 延遲 ≈ 本地 RAM 的 2~3 倍）
-  ⚠ 跨 Socket 存取 Remote RAM 比 Local RAM 慢得多，設計時盡量讓執行緒存取本地記憶體
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["單核時間切片（Concurrency，並發但非並行）"]
+  N2["時間軸"]
+  N3["Core0 T1 T2 T1 T3 T2 T1 T3"]
+  N4["Context Switch Context Switch"]
+  N5["（上下文切換，有額外成本）"]
+  N6["多核真並行（Parallelism）"]
+  N7["時間軸"]
+  N8["Core0 T1 T1 T1 T1 T1 T1"]
+  N9["Core1 T2 T2 T2 T2 T2 T2"]
+  N10["Core2 T3 T3 T3 T3 T3 T3"]
+  N11["Core3 T4 T4 T4 T4 T4 T4"]
+  N12["真正同時執行，吞吐量 ≈ 單核 × 核心數"]
+  N13["NUMA 多插槽架構（跨 Socket 成本警示）"]
+  N14["Socket 0 Socket 1"]
+  N15["Core0 Core1 ... Core4 Core5 ..."]
+  N16["L3 Cache (共享) L3 Cache (共享)"]
+  N17["Local RAM Local RAM"]
+  N18["QPI / UPI 互連"]
+  N19["（跨 Socket 延遲 ≈ 本地 RAM 的 2~3 倍）"]
+  N20["⚠ 跨 Socket 存取 Remote RAM 比 Local RAM 慢得多，設計時盡量讓執行緒存取本地記憶體"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N3 --&gt; N4
+  N3 --&gt; N5
+  N0 --&gt; N6
+  N0 --&gt; N7
+  N0 --&gt; N8
+  N0 --&gt; N9
+  N0 --&gt; N10
+  N0 --&gt; N11
+  N11 --&gt; N12
+  N0 --&gt; N13
+  N13 --&gt; N14
+  N13 --&gt; N15
+  N13 --&gt; N16
+  N13 --&gt; N17
+  N17 --&gt; N18
+  N18 --&gt; N19
+  N13 --&gt; N20
 </code></pre>
 <p>重點：</p>
 <ul>
@@ -266,51 +268,52 @@ NUMA 多插槽架構（跨 Socket 成本警示）：
 <h2 id="13-線程模型對應-131133"><a class="header" href="#13-線程模型對應-131133">1.3 線程模型（對應 1.3.1~1.3.3）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
-<pre><code class="language-text">三種線程模型對比：
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  模型 1：1:1 模型（Java / C++ / Rust 標準線程）                              │
-│                                                                             │
-│  User Space   [Thread A] [Thread B] [Thread C]                              │
-│                    │          │          │         每個用戶線程               │
-│  Kernel Space  [KThread]  [KThread]  [KThread]    直接對應一個核心線程        │
-│                    │          │          │                                   │
-│  CPU Core      [Core 0]   [Core 1]   [Core 2]                               │
-│                                                                             │
-│  優點：OS 直接調度，真正並行；阻塞不影響其他線程                                │
-│  缺點：線程創建/切換成本高（syscall），線程數受 OS 限制                         │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  模型 2：M:1 模型（舊版 Green Thread / 早期 JVM）                             │
-│                                                                             │
-│  User Space  [Thread A][Thread B][Thread C][Thread D][Thread E]             │
-│                  │         │         │         │         │                  │
-│              └───┴─────────┴─────────┴─────────┴─────────┘                 │
-│                              User-Level Scheduler                           │
-│                                       │                                     │
-│  Kernel Space                     [KThread]  ← 只有一個核心線程              │
-│                                       │                                     │
-│  CPU Core                         [Core 0]                                  │
-│                                                                             │
-│  優點：切換快（不需要 syscall）                                                │
-│  缺點：任一線程阻塞 → 整個進程卡住；無法利用多核                                │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  模型 3：M:N 模型（Go goroutine / Erlang process）                            │
-│                                                                             │
-│  User Space  [G1][G2][G3][G4][G5][G6][G7][G8]  ← N 個 goroutine（可達百萬） │
-│               └──┬──┘  └──┬──┘  └──┬──┘  └─┘                              │
-│              [P0 Queue] [P1 Queue] [P2 Queue]  ← M 個邏輯處理器（≈CPU核數）  │
-│                  │          │          │                                    │
-│  Kernel Space [KThread0] [KThread1] [KThread2] ← K 個核心線程               │
-│                  │          │          │                                    │
-│  CPU Core     [Core 0]   [Core 1]   [Core 2]                               │
-│                                                                             │
-│  優點：輕量（goroutine ~2KB），阻塞自動切換，真並行                             │
-│  缺點：Runtime 複雜；Work Stealing 調度有額外開銷                              │
-└─────────────────────────────────────────────────────────────────────────────┘
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["三種線程模型對比"]
+  N2["模型 1: 1:1 模型（Java / C++ / Rust 標準線程）"]
+  N3["User Space [Thread A] [Thread B] [Thread C]"]
+  N4["每個用戶線程"]
+  N5["Kernel Space [KThread] [KThread] [KThread] 直接對應一個核心線程"]
+  N6["CPU Core [Core 0] [Core 1] [Core 2]"]
+  N7["優點: OS 直接調度，真正並行；阻塞不影響其他線程"]
+  N8["缺點: 線程創建/切換成本高（syscall），線程數受 OS 限制"]
+  N9["模型 2: M:1 模型（舊版 Green Thread / 早期 JVM）"]
+  N10["User Space [Thread A][Thread B][Thread C][Thread D][Thread E]"]
+  N11["User-Level Scheduler"]
+  N12["Kernel Space [KThread] 只有一個核心線程"]
+  N13["CPU Core [Core 0]"]
+  N14["優點: 切換快（不需要 syscall）"]
+  N15["缺點: 任一線程阻塞 整個進程卡住；無法利用多核"]
+  N16["模型 3: M:N 模型（Go goroutine / Erlang process）"]
+  N17["User Space [G1][G2][G3][G4][G5][G6][G7][G8] N 個 goroutine（可達百萬）"]
+  N18["[P0 Queue] [P1 Queue] [P2 Queue] M 個邏輯處理器（≈CPU核數）"]
+  N19["Kernel Space [KThread0] [KThread1] [KThread2] K 個核心線程"]
+  N20["CPU Core [Core 0] [Core 1] [Core 2]"]
+  N21["優點: 輕量（goroutine ~2KB），阻塞自動切換，真並行"]
+  N22["缺點: Runtime 複雜；Work Stealing 調度有額外開銷"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N0 --&gt; N4
+  N0 --&gt; N5
+  N0 --&gt; N6
+  N0 --&gt; N7
+  N0 --&gt; N8
+  N0 --&gt; N9
+  N0 --&gt; N10
+  N0 --&gt; N11
+  N0 --&gt; N12
+  N0 --&gt; N13
+  N0 --&gt; N14
+  N0 --&gt; N15
+  N0 --&gt; N16
+  N0 --&gt; N17
+  N0 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
 </code></pre>
 <ul>
 <li>使用者線程：切換快，但碰到阻塞可能整批卡住。</li>
@@ -320,60 +323,60 @@ NUMA 多插槽架構（跨 Socket 成本警示）：
 <h2 id="14-java-線程與-os-線程映射"><a class="header" href="#14-java-線程與-os-線程映射">1.4 Java 線程與 OS 線程映射</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
-<pre><code class="language-text">Java 線程完整映射鏈：
-
-  Java 層                  JVM 層               OS 層          硬體層
-  ─────────                ──────               ─────          ──────
-  new Thread()
-      │
-      │ Java API
-      ▼
-  thread.start()
-      │
-      │ JNI 呼叫
-      ▼
-  ┌──────────────┐
-  │  JVM Native  │ ──────────────────► pthread_create()
-  │  Thread Code │                          │
-  └──────────────┘                          │ Linux syscall
-                                            ▼
-                                    ┌───────────────┐
-                                    │  OS Kernel    │
-                                    │  pthread /    │
-                                    │  clone()      │
-                                    └───────┬───────┘
-                                            │ 調度
-                                            ▼
-                                    ┌───────────────┐
-                                    │   CPU Core    │
-                                    │  執行機器碼    │
-                                    └───────────────┘
-
-Java 線程狀態機：
-
-         ┌─────────────────────────────────────────────────┐
-         │                                                 │
-  start()│                                                 │run() 結束
-         ▼                                                 │
-  ┌─────────┐   OS 分配時間片    ┌───────────┐             │
-  │   NEW   │──────────────────►│ RUNNABLE  │─────────────►│ TERMINATED │
-  └─────────┘                   └─────┬─────┘             │            │
-                                      │                   └────────────┘
-                      synchronized/IO │阻塞
-                      ┌───────────────┼───────────────┐
-                      ▼               ▼               ▼
-               ┌──────────┐  ┌──────────────┐  ┌──────────────┐
-               │ BLOCKED  │  │   WAITING    │  │TIMED_WAITING │
-               │(等待鎖)   │  │(wait/join/   │  │(sleep/       │
-               └────┬─────┘  │ park 無超時)  │  │ wait有超時)   │
-                    │        └──────┬───────┘  └──────┬───────┘
-                    │               │                  │
-                    │  鎖釋放        │ notify/          │ 超時/
-                    │               │ unpark           │ interrupt
-                    └───────────────┴──────────────────┘
-                                    │
-                                    ▼
-                               RUNNABLE（重新競爭）
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["Java 線程完整映射鏈"]
+  N2["Java 層 JVM 層 OS 層 硬體層"]
+  N3["new Thread()"]
+  N4["Java API"]
+  N5["thread.start()"]
+  N6["JNI 呼叫"]
+  N7["JVM Native pthread_create()"]
+  N8["Thread Code"]
+  N9["Linux syscall"]
+  N10["OS Kernel"]
+  N11["pthread /"]
+  N12["clone()"]
+  N13["調度"]
+  N14["CPU Core"]
+  N15["執行機器碼"]
+  N16["Java 線程狀態機"]
+  N17["start() run() 結束"]
+  N18["OS 分配時間片"]
+  N19["NEW RUNNABLE TERMINATED"]
+  N20["synchronized/IO 阻塞"]
+  N21["BLOCKED WAITING TIMED_WAITING"]
+  N22["(等待鎖) (wait/join/ (sleep/"]
+  N23["park 無超時) wait有超時)"]
+  N24["鎖釋放 notify/ 超時/"]
+  N25["unpark interrupt"]
+  N26["RUNNABLE（重新競爭）"]
+  N0 --&gt; N1
+  N1 --&gt; N2
+  N1 --&gt; N3
+  N3 --&gt; N4
+  N1 --&gt; N5
+  N5 --&gt; N6
+  N1 --&gt; N7
+  N1 --&gt; N8
+  N1 --&gt; N9
+  N9 --&gt; N10
+  N9 --&gt; N11
+  N9 --&gt; N12
+  N12 --&gt; N13
+  N9 --&gt; N14
+  N9 --&gt; N15
+  N0 --&gt; N16
+  N16 --&gt; N17
+  N16 --&gt; N18
+  N16 --&gt; N19
+  N19 --&gt; N20
+  N19 --&gt; N21
+  N19 --&gt; N22
+  N19 --&gt; N23
+  N23 --&gt; N24
+  N23 --&gt; N25
+  N25 --&gt; N26
 </code></pre>
 <p>Java 的 <code>Thread</code> 最終也要跑在 OS 調度上。C/C++/Rust/Go 一樣，差別主要在 runtime 包裝方式。</p>
 <h2 id="跨語言對照"><a class="header" href="#跨語言對照">跨語言對照</a></h2>
@@ -609,6 +612,7 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
+        <script src="theme/beautiful-mermaid.js"></script>
 
 
 

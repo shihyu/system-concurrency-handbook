@@ -29,6 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/beautiful-mermaid.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -179,354 +180,428 @@
 <h2 id="61-多級快取對應-611613"><a class="header" href="#61-多級快取對應-611613">6.1 多級快取（對應 6.1.1~6.1.3）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-text">  多核 CPU 多級快取延遲金字塔
-  ════════════════════════════════════════════════════════
-
-           ┌─────────────────────────────────────┐
-           │           CPU Die                   │
-           │                                     │
-           │  ┌──────────┐    ┌──────────┐       │
-           │  │  Core 0  │    │  Core 1  │       │
-           │  │          │    │          │       │
-           │  │ ┌──────┐ │    │ ┌──────┐ │       │
-           │  │ │  L1  │ │    │ │  L1  │ │       │
-           │  │ │32-64K│ │    │ │32-64K│ │       │
-           │  │ │~4 cy │ │    │ │~4 cy │ │       │
-           │  │ └──┬───┘ │    │ └──┬───┘ │       │
-           │  │   │     │    │    │     │       │
-           │  │ ┌──▼───┐ │    │ ┌──▼───┐ │       │
-           │  │ │  L2  │ │    │ │  L2  │ │       │
-           │  │ │256K  │ │    │ │256K  │ │       │
-           │  │ │~12 cy│ │    │ │~12 cy│ │       │
-           │  │ └──┬───┘ │    │ └──┬───┘ │       │
-           │  └────┼─────┘    └────┼─────┘       │
-           │       │               │             │
-           │       └───────┬───────┘             │
-           │            ┌──▼───┐                 │
-           │            │  L3  │  共享快取        │
-           │            │ 8-32M│                 │
-           │            │~40 cy│                 │
-           │            └──┬───┘                 │
-           └───────────────┼─────────────────────┘
-                           │
-                        ┌──▼───────┐
-                        │   RAM    │  主記憶體
-                        │  GB 級   │
-                        │ ~200 cy  │
-                        └──┬───────┘
-                           │
-                        ┌──▼───────┐
-                        │   磁碟   │  持久儲存
-                        │  TB 級   │
-                        │~10M cy   │
-                        └──────────┘
-
-  存取延遲對比（越往下越慢）：
-  ┌──────────────┬──────────────┬────────────────────────┐
-  │ 快取層級     │ 存取延遲     │ 說明                   │
-  ├──────────────┼──────────────┼────────────────────────┤
-  │ L1 Cache     │    ~4 cycles │ 每核私有，最快         │
-  │ L2 Cache     │   ~12 cycles │ 每核私有，較大         │
-  │ L3 Cache     │   ~40 cycles │ 多核共享               │
-  │ RAM          │  ~200 cycles │ 通過記憶體匯流排存取   │
-  │ SSD          │  ~100K cycles│ NVMe 介面              │
-  │ HDD/磁碟     │  ~10M cycles │ 機械旋轉延遲           │
-  └──────────────┴──────────────┴────────────────────────┘
-
-  ⚠ 重點：Core0 修改的資料在 L1/L2 中，Core1 可能看到舊值
-           必須靠快取一致性協議保證多副本同步
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["多核 CPU 多級快取延遲金字塔"]
+  N2["CPU Die"]
+  N3["Core 0 Core 1"]
+  N4["L1 L1"]
+  N5["32-64K 32-64K"]
+  N6["~4 cy ~4 cy"]
+  N7["L2 L2"]
+  N8["256K 256K"]
+  N9["~12 cy ~12 cy"]
+  N10["L3 共享快取"]
+  N11["8-32M"]
+  N12["~40 cy"]
+  N13["RAM 主記憶體"]
+  N14["GB 級"]
+  N15["~200 cy"]
+  N16["磁碟 持久儲存"]
+  N17["TB 級"]
+  N18["~10M cy"]
+  N19["存取延遲對比（越往下越慢）"]
+  N20["快取層級 存取延遲 說明"]
+  N21["L1 Cache ~4 cycles 每核私有，最快"]
+  N22["L2 Cache ~12 cycles 每核私有，較大"]
+  N23["L3 Cache ~40 cycles 多核共享"]
+  N24["RAM ~200 cycles 通過記憶體匯流排存取"]
+  N25["SSD ~100K cycles NVMe 介面"]
+  N26["HDD/磁碟 ~10M cycles 機械旋轉延遲"]
+  N27["⚠ 重點: Core0 修改的資料在 L1/L2 中，Core1 可能看到舊值"]
+  N28["必須靠快取一致性協議保證多副本同步"]
+  N0 --&gt; N1
+  N1 --&gt; N2
+  N1 --&gt; N3
+  N1 --&gt; N4
+  N1 --&gt; N5
+  N1 --&gt; N6
+  N1 --&gt; N7
+  N1 --&gt; N8
+  N1 --&gt; N9
+  N1 --&gt; N10
+  N1 --&gt; N11
+  N1 --&gt; N12
+  N12 --&gt; N13
+  N12 --&gt; N14
+  N12 --&gt; N15
+  N12 --&gt; N16
+  N12 --&gt; N17
+  N12 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
+  N0 --&gt; N23
+  N0 --&gt; N24
+  N0 --&gt; N25
+  N0 --&gt; N26
+  N0 --&gt; N27
+  N27 --&gt; N28
 </code></pre>
 <p>L1/L2/L3 讓 CPU 讀寫更快，但也帶來多副本一致性問題。</p>
 <h2 id="62-快取一致性對應-621625"><a class="header" href="#62-快取一致性對應-621625">6.2 快取一致性（對應 6.2.1~6.2.5）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-text">  MESI 協議四狀態轉換圖
-  ════════════════════════════════════════════════════════
-
-  狀態定義：
-  ┌─────────────┬──────────────────────────────────────┐
-  │ M (Modified)│ 本核修改過，其他核無副本，與 RAM 不同 │
-  │ E (Exclusive)│ 本核獨有，與 RAM 相同，無其他副本   │
-  │ S (Shared)  │ 多核共有，與 RAM 相同                │
-  │ I (Invalid) │ 快取行無效，需重新從其他核/RAM 取    │
-  └─────────────┴──────────────────────────────────────┘
-
-  狀態機轉換：
-                      ┌─────────────────┐
-              本核讀命中 ◄─┤  E (Exclusive)  ├─► 本核寫命中
-              不需總線操作  └────────┬────────┘   M (Modified)
-                                    │
-                          其他核讀（Bus Read）
-                                    │ 降級共享
-                                    ▼
-  ┌──────────────┐         ┌────────────────┐
-  │ M (Modified) │         │  S (Shared)    │
-  │              │◄────────│                │
-  │ 本核寫：不需  │  本核寫   │ 多核可同時持有  │
-  │ 總線操作      │  發送    │ 只能讀，不能寫  │
-  └──────┬───────┘ Invalidate└───────┬────────┘
-         │        給其他核           │
-         │ 其他核讀時                 │ 所有核清除或被替換
-         │ 回寫 RAM + 降為 S         │
-         ▼                           ▼
-  ┌──────────────────────────────────────────┐
-  │              I (Invalid)                 │
-  │         快取行無效，需要重新載入          │
-  └──────────────────────────────────────────┘
-
-  Core0 寫入流程（從 S → M，令 Core1 失效）：
-  ┌─────────────────────────────────────────────────────┐
-  │  時間                                               │
-  │   │                                                 │
-  │   │  1. Core0 和 Core1 都持有 x=10（S 狀態）        │
-  │   │     Core0 L1: [x=10, S]   Core1 L1: [x=10, S] │
-  │   │                                                 │
-  │   │  2. Core0 寫入 x=20                             │
-  │   │     Core0 發送 BusUpgr（Invalidate）給 Core1   │
-  │   │     ─────────────────────────────────────────► │
-  │   │     Core1 L1: [x=10, I]  ← 標記無效            │
-  │   │     Core0 L1: [x=20, M]  ← 獨占修改            │
-  │   │                                                 │
-  │   │  3. Core1 之後讀 x                              │
-  │   │     發現是 I（Invalid），發出 BusMiss           │
-  │   │     Core0 攔截，回寫 x=20 到 RAM               │
-  │   │     Core1 從 RAM 讀 x=20（S 狀態）              │
-  │   ▼                                                 │
-  └─────────────────────────────────────────────────────┘
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["MESI 協議四狀態轉換圖"]
+  N2["狀態定義"]
+  N3["M (Modified) 本核修改過，其他核無副本，與 RAM 不同"]
+  N4["E (Exclusive) 本核獨有，與 RAM 相同，無其他副本"]
+  N5["S (Shared) 多核共有，與 RAM 相同"]
+  N6["I (Invalid) 快取行無效，需重新從其他核/RAM 取"]
+  N7["狀態機轉換"]
+  N8["本核讀命中 E (Exclusive) 本核寫命中"]
+  N9["不需總線操作 M (Modified)"]
+  N10["其他核讀（Bus Read）"]
+  N11["降級共享"]
+  N12["M (Modified) S (Shared)"]
+  N13["本核寫: 不需 本核寫 多核可同時持有"]
+  N14["總線操作 發送 只能讀，不能寫"]
+  N15["Invalidate"]
+  N16["給其他核"]
+  N17["其他核讀時 所有核清除或被替換"]
+  N18["回寫 RAM + 降為 S"]
+  N19["I (Invalid)"]
+  N20["快取行無效，需要重新載入"]
+  N21["Core0 寫入流程（從 S M，令 Core1 失效）"]
+  N22["時間"]
+  N23["1. Core0 和 Core1 都持有 x=10（S 狀態）"]
+  N24["Core0 L1: [x=10, S] Core1 L1: [x=10, S]"]
+  N25["2. Core0 寫入 x=20"]
+  N26["Core0 發送 BusUpgr（Invalidate）給 Core1"]
+  N27["Core1 L1: [x=10, I] 標記無效"]
+  N28["Core0 L1: [x=20, M] 獨占修改"]
+  N29["3. Core1 之後讀 x"]
+  N30["發現是 I（Invalid），發出 BusMiss"]
+  N31["Core0 攔截，回寫 x=20 到 RAM"]
+  N32["Core1 從 RAM 讀 x=20（S 狀態）"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N0 --&gt; N4
+  N0 --&gt; N5
+  N0 --&gt; N6
+  N0 --&gt; N7
+  N7 --&gt; N8
+  N7 --&gt; N9
+  N9 --&gt; N10
+  N10 --&gt; N11
+  N0 --&gt; N12
+  N0 --&gt; N13
+  N0 --&gt; N14
+  N0 --&gt; N15
+  N15 --&gt; N16
+  N15 --&gt; N17
+  N15 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
+  N0 --&gt; N23
+  N0 --&gt; N24
+  N0 --&gt; N25
+  N0 --&gt; N26
+  N0 --&gt; N27
+  N0 --&gt; N28
+  N0 --&gt; N29
+  N0 --&gt; N30
+  N0 --&gt; N31
+  N0 --&gt; N32
 </code></pre>
 <p>MESI 等協議保證核心間最終一致。</p>
 <h2 id="63-偽共享對應-631633"><a class="header" href="#63-偽共享對應-631633">6.3 偽共享（對應 6.3.1~6.3.3）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
-<pre><code class="language-text">  偽共享（False Sharing）問題示意
-  ════════════════════════════════════════════════════════
-
-  問題：x 和 y 落在同一個 64-byte 快取行
-
-  記憶體布局：
-  ┌────────────────────────────────────────────────────┐
-  │              64-byte Cache Line                    │
-  │  ┌──────────┬──────────┬──────────────────────┐   │
-  │  │  x (8B)  │  y (8B)  │   padding...  (48B)  │   │
-  │  │  addr 0  │  addr 8  │   addr 16~63         │   │
-  │  └──────────┴──────────┴──────────────────────┘   │
-  └────────────────────────────────────────────────────┘
-        ↑                ↑
-    Core0 寫 x       Core1 寫 y
-
-  結果（每次寫都會使對方快取行失效）：
-  ┌──────────────────────────────────────────────────┐
-  │  Core0 寫 x=1                                    │
-  │    → 整條 64B Cache Line 變 M 狀態               │
-  │    → 發 Invalidate 給 Core1                      │
-  │    → Core1 的 y 雖然沒動，快取行也失效！          │
-  │                                                  │
-  │  Core1 要讀/寫 y                                 │
-  │    → Cache Miss（因為被 Core0 的寫 x 連帶失效）  │
-  │    → 必須等 Core0 回寫，再從 RAM 重新載入        │
-  │    → 效能劇烈下降（可能慢 10~100 倍）            │
-  └──────────────────────────────────────────────────┘
-
-  解法 1：填充（Padding）讓 x 和 y 各占獨立快取行
-  ┌────────────────────────────────────────────────────┐
-  │   Cache Line 0 (64B)    │   Cache Line 1 (64B)    │
-  │  ┌──────┬─────────────┐ │ ┌──────┬─────────────┐  │
-  │  │  x   │ padding 56B │ │ │  y   │ padding 56B │  │
-  │  └──────┴─────────────┘ │ └──────┴─────────────┘  │
-  │       Core0 操作         │      Core1 操作          │
-  └────────────────────────────────────────────────────┘
-  Core0 修改 x → 只影響 Cache Line 0，不影響 Core1
-
-  解法 2：編譯器對齊屬性
-  C：    __attribute__((aligned(64))) int x;
-  C++：  alignas(64) int x;
-  Rust： #[repr(align(64))] struct PaddedCell { val: i64 }
-  Go：   使用 atomic + 手動補位元組到 64B
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["偽共享（False Sharing）問題示意"]
+  N2["問題: x 和 y 落在同一個 64-byte 快取行"]
+  N3["記憶體布局"]
+  N4["64-byte Cache Line"]
+  N5["x (8B) y (8B) padding... (48B)"]
+  N6["addr 0 addr 8 addr 16~63"]
+  N7["Core0 寫 x Core1 寫 y"]
+  N8["結果（每次寫都會使對方快取行失效）"]
+  N9["Core0 寫 x=1"]
+  N10["整條 64B Cache Line 變 M 狀態"]
+  N11["發 Invalidate 給 Core1"]
+  N12["Core1 的 y 雖然沒動，快取行也失效！"]
+  N13["Core1 要讀/寫 y"]
+  N14["Cache Miss（因為被 Core0 的寫 x 連帶失效）"]
+  N15["必須等 Core0 回寫，再從 RAM 重新載入"]
+  N16["效能劇烈下降（可能慢 10~100 倍）"]
+  N17["解法 1: 填充（Padding）讓 x 和 y 各占獨立快取行"]
+  N18["Cache Line 0 (64B) Cache Line 1 (64B)"]
+  N19["x padding 56B y padding 56B"]
+  N20["Core0 操作 Core1 操作"]
+  N21["Core0 修改 x 只影響 Cache Line 0，不影響 Core1"]
+  N22["解法 2: 編譯器對齊屬性"]
+  N23["C: __attribute__((aligned(64))) int x;"]
+  N24["C++: alignas(64) int x;"]
+  N25["Rust: #[repr(align(64))] struct PaddedCell { val: i64 }"]
+  N26["Go: 使用 atomic + 手動補位元組到 64B"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N0 --&gt; N4
+  N0 --&gt; N5
+  N0 --&gt; N6
+  N6 --&gt; N7
+  N0 --&gt; N8
+  N0 --&gt; N9
+  N0 --&gt; N10
+  N0 --&gt; N11
+  N0 --&gt; N12
+  N0 --&gt; N13
+  N0 --&gt; N14
+  N0 --&gt; N15
+  N0 --&gt; N16
+  N0 --&gt; N17
+  N0 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
+  N0 --&gt; N23
+  N0 --&gt; N24
+  N0 --&gt; N25
+  N0 --&gt; N26
 </code></pre>
 <p>不同變數落在同一 cache line，互相拖慢。</p>
 <h2 id="64-volatile-類語義對應-641643"><a class="header" href="#64-volatile-類語義對應-641643">6.4 volatile 類語義（對應 6.4.1~6.4.3）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
-<pre><code class="language-text">  volatile 可見性語義：寫前 StoreStore + 讀後 LoadLoad
-  ════════════════════════════════════════════════════════
-
-  Thread 1 (Writer)                Thread 2 (Reader)
-  ──────────────────               ─────────────────────
-  write data = 42          │       read result = flag
-                           │
-  ┌─ StoreStore Fence ──┐  │       ┌─ LoadLoad Fence ──┐
-  │  確保 data 寫入先    │  │       │  確保 flag 讀出後  │
-  │  於 flag 寫入可見    │  │       │  才讀 data        │
-  └─────────────────────┘  │       └───────────────────┘
-           │               │                │
-           ▼               │                ▼
-  write flag = true        │       if flag == true:
-  （volatile write）       │           use data  ← 保證看到 42
-           │               │
-           └──── 可見性保證（flush store buffer）──────►
-
-  volatile 的保證與限制：
-  ┌─────────────────────────────────────────────────────┐
-  │  ✅ 保證：每次讀都從主記憶體/快取一致視圖讀取        │
-  │  ✅ 保證：每次寫都立即刷新到主記憶體               │
-  │  ✅ 保證：寫操作對其他執行緒可見（happens-before）  │
-  │                                                     │
-  │  ❌ 不保證：複合操作原子性                          │
-  │     volatile int v = 0;                             │
-  │     v++;  // 等同 v = v + 1，read-modify-write      │
-  │            // 兩個執行緒各自讀 0，都寫 1 → 遺失更新 │
-  └─────────────────────────────────────────────────────┘
-
-  四種語言的 volatile 對應：
-  ┌──────────┬─────────────────────────────────────────┐
-  │ 語言     │ volatile / 可見性 API                   │
-  ├──────────┼─────────────────────────────────────────┤
-  │ C/C++    │ volatile（只阻止編譯器重排，非執行緒安全）│
-  │          │ atomic_store/load（正確做法）            │
-  │ Rust     │ AtomicXxx::store/load(Ordering)          │
-  │ Go       │ sync/atomic.Store/Load                  │
-  └──────────┴─────────────────────────────────────────┘
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["volatile 可見性語義: 寫前 StoreStore + 讀後 LoadLoad"]
+  N2["Thread 1 (Writer) Thread 2 (Reader)"]
+  N3["write data = 42 read result = flag"]
+  N4["StoreStore Fence LoadLoad Fence"]
+  N5["確保 data 寫入先 確保 flag 讀出後"]
+  N6["於 flag 寫入可見 才讀 data"]
+  N7["write flag = true if flag == true"]
+  N8["（volatile write） use data 保證看到 42"]
+  N9["可見性保證（flush store buffer）"]
+  N10["volatile 的保證與限制"]
+  N11["✅ 保證: 每次讀都從主記憶體/快取一致視圖讀取"]
+  N12["✅ 保證: 每次寫都立即刷新到主記憶體"]
+  N13["✅ 保證: 寫操作對其他執行緒可見（happens-before）"]
+  N14["❌ 不保證: 複合操作原子性"]
+  N15["volatile int v = 0;"]
+  N16["v++; // 等同 v = v + 1，read-modify-write"]
+  N17["// 兩個執行緒各自讀 0，都寫 1 遺失更新"]
+  N18["四種語言的 volatile 對應"]
+  N19["語言 volatile / 可見性 API"]
+  N20["C/C++ volatile（只阻止編譯器重排，非執行緒安全）"]
+  N21["atomic_store/load（正確做法）"]
+  N22["Rust AtomicXxx::store/load(Ordering)"]
+  N23["Go sync/atomic.Store/Load"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N0 --&gt; N4
+  N0 --&gt; N5
+  N0 --&gt; N6
+  N0 --&gt; N7
+  N0 --&gt; N8
+  N8 --&gt; N9
+  N0 --&gt; N10
+  N0 --&gt; N11
+  N0 --&gt; N12
+  N0 --&gt; N13
+  N0 --&gt; N14
+  N0 --&gt; N15
+  N0 --&gt; N16
+  N0 --&gt; N17
+  N0 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
+  N0 --&gt; N23
 </code></pre>
 <p>可見性強，但不保證複合操作原子性。</p>
 <h2 id="65-指令重排與屏障對應-651654"><a class="header" href="#65-指令重排與屏障對應-651654">6.5 指令重排與屏障（對應 6.5.1~6.5.4）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-4"><a class="header" href="#本小節示意圖-4">本小節示意圖</a></h3>
-<pre><code class="language-text">  四種記憶體屏障（Memory Fence）類型
-  ════════════════════════════════════════════════════════
-
-  屏障阻止跨越屏障的重排序（時間從上到下）：
-
-  ┌─────────────────┬──────────────────────────────────┐
-  │  LoadLoad        │  確保屏障前的 Load 先於後面的 Load│
-  │                  │                                  │
-  │  load A          │  ─────── 屏障上方 ───────        │
-  │  ── LL Fence ──  │  ══════════════════════════════  │
-  │  load B          │  ─────── 屏障下方 ───────        │
-  │  保證 A 先於 B   │  A 的結果對下方 Load 可見        │
-  └─────────────────┴──────────────────────────────────┘
-
-  ┌─────────────────┬──────────────────────────────────┐
-  │  LoadStore       │  確保屏障前的 Load 先於後面的Store│
-  │                  │                                  │
-  │  load A          │  通常用於避免載入後的寫被提前    │
-  │  ── LS Fence ──  │                                  │
-  │  store B         │                                  │
-  └─────────────────┴──────────────────────────────────┘
-
-  ┌─────────────────┬──────────────────────────────────┐
-  │  StoreStore      │  確保屏障前的 Store 先於後面Store │
-  │                  │                                  │
-  │  store A         │  ─────── 屏障上方 ───────        │
-  │  ── SS Fence ──  │  ══════════════════════════════  │
-  │  store B         │  ─────── 屏障下方 ───────        │
-  │  保證 A 先寫出   │  A 對其他核的可見先於 B           │
-  └─────────────────┴──────────────────────────────────┘
-
-  ┌─────────────────┬──────────────────────────────────┐
-  │  StoreLoad       │  最重的屏障，確保前面 Store 對所有│
-  │  （全屏障）      │  核可見後，才執行後面的 Load      │
-  │                  │                                  │
-  │  store A         │  必須刷新 Store Buffer + 清空    │
-  │  ── SL Fence ──  │  Invalidate Queue               │
-  │  load B          │  代價最高，x86 用 MFENCE        │
-  └─────────────────┴──────────────────────────────────┘
-
-  Acquire / Release 語義包含的 Fence：
-
-  Release（寫端）：          Acquire（讀端）：
-  ┌──────────────────┐       ┌──────────────────┐
-  │  普通寫操作       │       │  acquire load    │
-  │  普通寫操作       │       │                  │
-  │  ─ SS Fence ──   │       │  ─ LL + LS ──    │
-  │  ─ LS Fence ──   │       │    Fence          │
-  │  release store   │       │                  │
-  └──────────────────┘       │  普通讀操作       │
-  保證 release 前的寫         └──────────────────┘
-  在 release store 之前可見   保證 acquire 後的讀
-                              在 acquire load 之後
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["四種記憶體屏障（Memory Fence）類型"]
+  N2["屏障阻止跨越屏障的重排序（時間從上到下）"]
+  N3["LoadLoad 確保屏障前的 Load 先於後面的 Load"]
+  N4["load A 屏障上方"]
+  N5["LL Fence"]
+  N6["load B 屏障下方"]
+  N7["保證 A 先於 B A 的結果對下方 Load 可見"]
+  N8["LoadStore 確保屏障前的 Load 先於後面的Store"]
+  N9["load A 通常用於避免載入後的寫被提前"]
+  N10["LS Fence"]
+  N11["store B"]
+  N12["StoreStore 確保屏障前的 Store 先於後面Store"]
+  N13["store A 屏障上方"]
+  N14["SS Fence"]
+  N15["store B 屏障下方"]
+  N16["保證 A 先寫出 A 對其他核的可見先於 B"]
+  N17["StoreLoad 最重的屏障，確保前面 Store 對所有"]
+  N18["（全屏障） 核可見後，才執行後面的 Load"]
+  N19["store A 必須刷新 Store Buffer + 清空"]
+  N20["SL Fence Invalidate Queue"]
+  N21["load B 代價最高，x86 用 MFENCE"]
+  N22["Acquire / Release 語義包含的 Fence"]
+  N23["Release（寫端）: Acquire（讀端）"]
+  N24["普通寫操作 acquire load"]
+  N25["普通寫操作"]
+  N26["SS Fence LL + LS"]
+  N27["LS Fence Fence"]
+  N28["release store"]
+  N29["普通讀操作"]
+  N30["保證 release 前的寫"]
+  N31["在 release store 之前可見 保證 acquire 後的讀"]
+  N32["在 acquire load 之後"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N0 --&gt; N4
+  N0 --&gt; N5
+  N0 --&gt; N6
+  N0 --&gt; N7
+  N0 --&gt; N8
+  N0 --&gt; N9
+  N0 --&gt; N10
+  N0 --&gt; N11
+  N0 --&gt; N12
+  N0 --&gt; N13
+  N0 --&gt; N14
+  N0 --&gt; N15
+  N0 --&gt; N16
+  N0 --&gt; N17
+  N0 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
+  N0 --&gt; N23
+  N0 --&gt; N24
+  N0 --&gt; N25
+  N0 --&gt; N26
+  N0 --&gt; N27
+  N0 --&gt; N28
+  N0 --&gt; N29
+  N0 --&gt; N30
+  N0 --&gt; N31
+  N31 --&gt; N32
 </code></pre>
 <p>Memory Fence 阻止特定方向的重排。</p>
 <h2 id="66-記憶體模型對應-661663"><a class="header" href="#66-記憶體模型對應-661663">6.6 記憶體模型（對應 6.6.1~6.6.3）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-5"><a class="header" href="#本小節示意圖-5">本小節示意圖</a></h3>
-<pre><code class="language-text">  各語言記憶體模型與同步 API 對比
-  ════════════════════════════════════════════════════════
-
-  ┌──────────┬──────────────────┬─────────────────────────────────────┐
-  │ 語言     │ 記憶體模型        │ 同步操作 API / 保證                  │
-  ├──────────┼──────────────────┼─────────────────────────────────────┤
-  │ C11/C17  │ C11 Memory Model │ atomic_store(relaxed/release/seq_cst)│
-  │          │ 弱序 + 顯式標注   │ atomic_load(relaxed/acquire/seq_cst) │
-  │          │                  │ atomic_thread_fence(memory_order_*)  │
-  ├──────────┼──────────────────┼─────────────────────────────────────┤
-  │ C++11+   │ C++ Memory Model │ std::atomic&lt;T&gt;::store(memory_order)  │
-  │          │ 與 C11 相近      │ std::atomic&lt;T&gt;::load(memory_order)   │
-  │          │                  │ memory_order_{relaxed,acquire,       │
-  │          │                  │   release,acq_rel,seq_cst}           │
-  ├──────────┼──────────────────┼─────────────────────────────────────┤
-  │ Rust     │ C++ 相容         │ AtomicI32::store(val, Ordering::*)   │
-  │          │ 型別系統強制      │ AtomicI32::load(Ordering::*)         │
-  │          │ 所有權排除競爭    │ Ordering::{Relaxed,Acquire,          │
-  │          │                  │   Release,AcqRel,SeqCst}             │
-  ├──────────┼──────────────────┼─────────────────────────────────────┤
-  │ Go       │ Go Memory Model  │ sync/atomic.Store/Load               │
-  │          │ 較簡單，happens- │ sync.Mutex / sync.RWMutex            │
-  │          │ before 為主      │ channel send/recv（天然同步點）       │
-  │          │                  │ 無顯式 memory_order 選擇             │
-  └──────────┴──────────────────┴─────────────────────────────────────┘
-
-  強弱排序光譜：
-  弱序（性能高，推理難）                    強序（性能低，推理易）
-  ────────────────────────────────────────────────────────►
-  Relaxed        Acquire/Release       SeqCst（全序）
-  （無同步）      （happens-before）    （全局一致順序）
-  僅原子性        producer-consumer     計數器、旗標
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["各語言記憶體模型與同步 API 對比"]
+  N2["語言 記憶體模型 同步操作 API / 保證"]
+  N3["C11/C17 C11 Memory Model atomic_store(relaxed/release/seq_cst)"]
+  N4["弱序 + 顯式標注 atomic_load(relaxed/acquire/seq_cst)"]
+  N5["atomic_thread_fence(memory_order_*)"]
+  N6["C++11+ C++ Memory Model std::atomic&amp;lt;T&amp;gt;::store(memory_order)"]
+  N7["與 C11 相近 std::atomic&amp;lt;T&amp;gt;::load(memory_order)"]
+  N8["memory_order_{relaxed,acquire,"]
+  N9["release,acq_rel,seq_cst}"]
+  N10["Rust C++ 相容 AtomicI32::store(val, Ordering::*)"]
+  N11["型別系統強制 AtomicI32::load(Ordering::*)"]
+  N12["所有權排除競爭 Ordering::{Relaxed,Acquire,"]
+  N13["Release,AcqRel,SeqCst}"]
+  N14["Go Go Memory Model sync/atomic.Store/Load"]
+  N15["較簡單，happens- sync.Mutex / sync.RWMutex"]
+  N16["before 為主 channel send/recv（天然同步點）"]
+  N17["無顯式 memory_order 選擇"]
+  N18["強弱排序光譜"]
+  N19["弱序（性能高，推理難） 強序（性能低，推理易）"]
+  N20["Relaxed Acquire/Release SeqCst（全序）"]
+  N21["（無同步） （happens-before） （全局一致順序）"]
+  N22["僅原子性 producer-consumer 計數器、旗標"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N0 --&gt; N4
+  N0 --&gt; N5
+  N0 --&gt; N6
+  N0 --&gt; N7
+  N0 --&gt; N8
+  N0 --&gt; N9
+  N0 --&gt; N10
+  N0 --&gt; N11
+  N0 --&gt; N12
+  N0 --&gt; N13
+  N0 --&gt; N14
+  N0 --&gt; N15
+  N0 --&gt; N16
+  N0 --&gt; N17
+  N0 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
 </code></pre>
 <p>Java、C++、Rust、Go 都定義了跨執行緒可見性規則。</p>
 <h2 id="67-happens-before對應-671679"><a class="header" href="#67-happens-before對應-671679">6.7 happens-before（對應 6.7.1~6.7.9）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-6"><a class="header" href="#本小節示意圖-6">本小節示意圖</a></h3>
-<pre><code class="language-text">  happens-before（HB）傳遞鏈示意
-  ════════════════════════════════════════════════════════
-
-  執行緒 T1                     執行緒 T2
-  ──────────────────            ──────────────────
-  data = 42           ─── HB ──► (HB 傳遞)
-      │ HB（程式順序）           │
-  unlock(L)           ═══ HB ══► lock(L)
-                                 │ HB（程式順序）
-                                read data → 42 ✅
-
-  HB 鏈推導：
-  ┌─────────────────────────────────────────────────────┐
-  │  data = 42                                          │
-  │      │ HB（T1 程式順序：先寫 data 再 unlock）        │
-  │      ▼                                              │
-  │  unlock(L)                                          │
-  │      │ HB（同步動作：unlock HB lock 同一把鎖）       │
-  │      ▼                                              │
-  │  lock(L)   ← T2 獲取同一把鎖                        │
-  │      │ HB（T2 程式順序：先 lock 再讀 data）          │
-  │      ▼                                              │
-  │  read data → 保證看到 42（HB 具傳遞性）              │
-  └─────────────────────────────────────────────────────┘
-
-  建立 happens-before 的常見同步事件：
-  ┌──────────────────────────────────────────────────────┐
-  │  同步事件                  HB 關係                   │
-  ├──────────────────────────────────────────────────────┤
-  │  unlock(L)           HB    lock(L)（同一鎖）         │
-  │  volatile write      HB    volatile read（後發生）   │
-  │  thread.start()      HB    執行緒內第一個動作         │
-  │  執行緒最後動作       HB    thread.join() 返回        │
-  │  channel send        HB    channel recv（Go）        │
-  │  release store       HB    acquire load（C++/Rust）  │
-  └──────────────────────────────────────────────────────┘
-
-  HB 具有傳遞性：若 A HB B 且 B HB C，則 A HB C
-  ┌───┐  HB  ┌───┐  HB  ┌───┐
-  │ A │─────►│ B │─────►│ C │   則 A HB C
-  └───┘      └───┘      └───┘
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["happens-before（HB）傳遞鏈示意"]
+  N2["執行緒 T1 執行緒 T2"]
+  N3["data = 42 HB (HB 傳遞)"]
+  N4["HB（程式順序）"]
+  N5["unlock(L) HB lock(L)"]
+  N6["HB（程式順序）"]
+  N7["read data 42 ✅"]
+  N8["HB 鏈推導"]
+  N9["data = 42"]
+  N10["HB（T1 程式順序: 先寫 data 再 unlock）"]
+  N11["unlock(L)"]
+  N12["HB（同步動作: unlock HB lock 同一把鎖）"]
+  N13["lock(L) T2 獲取同一把鎖"]
+  N14["HB（T2 程式順序: 先 lock 再讀 data）"]
+  N15["read data 保證看到 42（HB 具傳遞性）"]
+  N16["建立 happens-before 的常見同步事件"]
+  N17["同步事件 HB 關係"]
+  N18["unlock(L) HB lock(L)（同一鎖）"]
+  N19["volatile write HB volatile read（後發生）"]
+  N20["thread.start() HB 執行緒內第一個動作"]
+  N21["執行緒最後動作 HB thread.join() 返回"]
+  N22["channel send HB channel recv（Go）"]
+  N23["release store HB acquire load（C++/Rust）"]
+  N24["HB 具有傳遞性: 若 A HB B 且 B HB C，則 A HB C"]
+  N25["HB HB"]
+  N26["A B C 則 A HB C"]
+  N0 --&gt; N1
+  N0 --&gt; N2
+  N0 --&gt; N3
+  N3 --&gt; N4
+  N0 --&gt; N5
+  N5 --&gt; N6
+  N5 --&gt; N7
+  N0 --&gt; N8
+  N0 --&gt; N9
+  N0 --&gt; N10
+  N0 --&gt; N11
+  N0 --&gt; N12
+  N0 --&gt; N13
+  N0 --&gt; N14
+  N0 --&gt; N15
+  N0 --&gt; N16
+  N0 --&gt; N17
+  N0 --&gt; N18
+  N0 --&gt; N19
+  N0 --&gt; N20
+  N0 --&gt; N21
+  N0 --&gt; N22
+  N0 --&gt; N23
+  N0 --&gt; N24
+  N0 --&gt; N25
+  N0 --&gt; N26
 </code></pre>
 <p>能建立 happens-before 的同步事件，才可推導正確性。</p>
 <pre><code class="language-text">unlock(L) happens-before lock(L)
@@ -761,6 +836,7 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
+        <script src="theme/beautiful-mermaid.js"></script>
 
 
 

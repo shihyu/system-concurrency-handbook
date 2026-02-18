@@ -29,6 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/beautiful-mermaid.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -179,112 +180,115 @@
 <h2 id="171-場景"><a class="header" href="#171-場景">17.1 場景</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-text">讀寫比例與並發度對比
-
-  典型快取存取分布：
-  ┌─────────────────────────────────────────────────────┐
-  │  操作比例                                            │
-  │                                                     │
-  │  Read  ████████████████████████████████████░  95%  │
-  │  Write ██░                                    5%   │
-  │                                                     │
-  └─────────────────────────────────────────────────────┘
-
-  ─── 使用 Mutex（排他鎖）─────────────────────────────────────
-
-  時間 ──────────────────────────────────────────────────────►
-  R1   [讀─]
-  R2       [等][讀─]
-  R3             [等──][讀─]
-  R4                       [等─────][讀─]
-       ↑每次只有一個讀操作，其餘全部等待，嚴重浪費
-
-  並發度：1 個同時（無論讀寫）
-
-  ─── 使用 RWMutex（讀寫鎖）──────────────────────────────────
-
-  時間 ──────────────────────────────────────────────────────►
-  R1   [讀────────────────]
-  R2   [讀────────────────]  ← 多個讀可以同時進行
-  R3   [讀────────────────]
-  R4   [讀────────────────]
-  W1                      [等─][寫─][寫完，讀者可再進]
-
-  並發度：讀者無限並發，寫者獨占
-
-  ┌───────────────────────────────────────────────────────┐
-  │  RWMutex 帶來的效益（95% 讀場景）：                    │
-  │  ・讀吞吐量提升 ~20x（從串行讀 → 並發讀）             │
-  │  ・寫操作仍然安全（獨占）                             │
-  │  ・適合：設定快取、查詢快取、計算結果快取等           │
-  └───────────────────────────────────────────────────────┘
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["讀寫比例與並發度對比"]
+  N2["典型快取存取分布"]
+  N3["操作比例"]
+  N4["Read ░ 95%"]
+  N5["Write ░ 5%"]
+  N6["使用 Mutex（排他鎖）"]
+  N7["時間"]
+  N8["R1 [讀 ]"]
+  N9["R2 [等][讀 ]"]
+  N10["R3 [等 ][讀 ]"]
+  N11["R4 [等 ][讀 ]"]
+  N12["↑每次只有一個讀操作，其餘全部等待，嚴重浪費"]
+  N13["並發度: 1 個同時（無論讀寫）"]
+  N14["使用 RWMutex（讀寫鎖）"]
+  N15["時間"]
+  N16["R1 [讀 ]"]
+  N17["R2 [讀 ] 多個讀可以同時進行"]
+  N18["R3 [讀 ]"]
+  N19["R4 [讀 ]"]
+  N20["W1 [等 ][寫 ][寫完，讀者可再進]"]
+  N21["並發度: 讀者無限並發，寫者獨占"]
+  N22["RWMutex 帶來的效益（95% 讀場景）"]
+  N23["・讀吞吐量提升 ~20x（從串行讀 並發讀）"]
+  N24["・寫操作仍然安全（獨占）"]
+  N25["・適合: 設定快取、查詢快取、計算結果快取等"]
+  N0 --&gt; N1
+  N1 --&gt; N2
+  N1 --&gt; N3
+  N1 --&gt; N4
+  N1 --&gt; N5
+  N1 --&gt; N6
+  N1 --&gt; N7
+  N1 --&gt; N8
+  N1 --&gt; N9
+  N1 --&gt; N10
+  N1 --&gt; N11
+  N11 --&gt; N12
+  N1 --&gt; N13
+  N1 --&gt; N14
+  N1 --&gt; N15
+  N1 --&gt; N16
+  N1 --&gt; N17
+  N1 --&gt; N18
+  N1 --&gt; N19
+  N1 --&gt; N20
+  N1 --&gt; N21
+  N1 --&gt; N22
+  N1 --&gt; N23
+  N1 --&gt; N24
+  N1 --&gt; N25
 </code></pre>
 <p>讀多寫少的快取查詢。</p>
 <h2 id="172-基本模式"><a class="header" href="#172-基本模式">17.2 基本模式</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-text">Cache 查找完整流程（含雙重檢查）
-
-  客戶端請求 key
-       │
-       ▼
-  ┌───────────────┐
-  │  read_lock()  │  ← 允許多個讀者同時進入
-  └───────┬───────┘
-          │
-          ▼
-  ┌───────────────┐    命中
-  │  cache[key]   │ ──────────────────────────────────►  return value
-  │  存在？       │
-  └───────┬───────┘
-          │ 未命中（miss）
-          ▼
-  ┌─────────────────┐
-  │  read_unlock()  │  ← 必須先釋放讀鎖，否則無法升級為寫鎖
-  └───────┬─────────┘
-          │
-          ▼
-  ┌───────────────┐
-  │  write_lock() │  ← 等待所有讀者退出，獲得排他鎖
-  └───────┬───────┘
-          │
-          ▼
-  ┌────────────────────────────────────┐
-  │  Double-Check: cache[key] 存在？   │  ← 二次確認！
-  │                                    │    防止並發 miss 重複載入
-  └───────┬────────────────────────────┘
-          │                    │
-          │ 已有（其他執行緒   │ 仍無
-          │ 搶先載入了）       │
-          ▼                    ▼
-     return value        ┌──────────────┐
-                         │  load from   │
-                         │  DB / Source │
-                         └──────┬───────┘
-                                │
-                                ▼
-                         ┌──────────────┐
-                         │  cache[key]  │
-                         │    = value   │
-                         └──────┬───────┘
-                                │
-                                ▼
-                         ┌─────────────────┐
-                         │  write_unlock() │
-                         └──────┬──────────┘
-                                │
-                                ▼
-                            return value
-
-  ┌──────────────────────────────────────────────────────────┐
-  │  為何需要雙重檢查（Double-Check）？                       │
-  │                                                          │
-  │  T1: miss → 釋放讀鎖 ─────────────────► 拿寫鎖 → load  │
-  │  T2: miss → 釋放讀鎖 → 等待寫鎖 ─────► 拿寫鎖 → ???   │
-  │                                                          │
-  │  若無二次檢查：T1 load 後 T2 又 load → 重複查 DB！      │
-  │  加上二次檢查：T2 拿到鎖後發現已有 → 直接返回 ✓        │
-  └──────────────────────────────────────────────────────────┘
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["Cache 查找完整流程（含雙重檢查）"]
+  N2["客戶端請求 key"]
+  N3["read_lock() 允許多個讀者同時進入"]
+  N4["命中"]
+  N5["cache[key] return value"]
+  N6["存在？"]
+  N7["未命中（miss）"]
+  N8["read_unlock() 必須先釋放讀鎖，否則無法升級為寫鎖"]
+  N9["write_lock() 等待所有讀者退出，獲得排他鎖"]
+  N10["Double-Check: cache[key] 存在？ 二次確認！"]
+  N11["防止並發 miss 重複載入"]
+  N12["已有（其他執行緒 仍無"]
+  N13["搶先載入了）"]
+  N14["return value"]
+  N15["load from"]
+  N16["DB / Source"]
+  N17["cache[key]"]
+  N18["= value"]
+  N19["write_unlock()"]
+  N20["return value"]
+  N21["為何需要雙重檢查（Double-Check）？"]
+  N22["T1: miss 釋放讀鎖 拿寫鎖 load"]
+  N23["T2: miss 釋放讀鎖 等待寫鎖 拿寫鎖 ???"]
+  N24["若無二次檢查: T1 load 後 T2 又 load 重複查 DB！"]
+  N25["加上二次檢查: T2 拿到鎖後發現已有 直接返回 ✓"]
+  N0 --&gt; N1
+  N1 --&gt; N2
+  N1 --&gt; N3
+  N1 --&gt; N4
+  N1 --&gt; N5
+  N1 --&gt; N6
+  N6 --&gt; N7
+  N1 --&gt; N8
+  N1 --&gt; N9
+  N1 --&gt; N10
+  N1 --&gt; N11
+  N11 --&gt; N12
+  N11 --&gt; N13
+  N11 --&gt; N14
+  N14 --&gt; N15
+  N14 --&gt; N16
+  N14 --&gt; N17
+  N14 --&gt; N18
+  N14 --&gt; N19
+  N19 --&gt; N20
+  N1 --&gt; N21
+  N1 --&gt; N22
+  N1 --&gt; N23
+  N1 --&gt; N24
+  N1 --&gt; N25
 </code></pre>
 <ul>
 <li>讀：拿讀鎖</li>
@@ -294,93 +298,105 @@
 <h2 id="173-結構設計對應-17311732"><a class="header" href="#173-結構設計對應-17311732">17.3 結構設計（對應 17.3.1~17.3.2）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
-<pre><code class="language-text">Cache 結構設計與 RWMutex 保護範圍
-
-  ┌─────────────────────────────────────────────────────────┐
-  │                   Cache 結構體                           │
-  │                                                         │
-  │  ┌─────────────────┐   ┌─────────────────────────────┐ │
-  │  │  data: HashMap  │   │  RWMutex                    │ │
-  │  │                 │   │                             │ │
-  │  │  "user:1" → 42  │   │  RLock() / RUnlock()        │ │
-  │  │  "user:2" → 18  │   │  ↑ 保護 data 的讀操作       │ │
-  │  │  "user:3" → 99  │   │                             │ │
-  │  │  ...            │   │  Lock() / Unlock()           │ │
-  │  └─────────────────┘   │  ↑ 保護 data 的寫操作       │ │
-  │                         └─────────────────────────────┘ │
-  │  ┌─────────────────────────────────────────────────────┐│
-  │  │  loader: fn(key) → value                            ││
-  │  │  ↑ 當 cache miss 時，呼叫此函式載入資料             ││
-  │  └─────────────────────────────────────────────────────┘│
-  └─────────────────────────────────────────────────────────┘
-
-  操作與鎖的對應關係：
-
-  ┌──────────────────┬──────────────────┬──────────────────┐
-  │     操作         │    使用的鎖      │     說明         │
-  ├──────────────────┼──────────────────┼──────────────────┤
-  │  Get (hit)       │  RLock/RUnlock   │  多讀者並發安全  │
-  │  Get (miss)      │  先 RUnlock      │  釋放讀鎖後      │
-  │                  │  再 Lock/Unlock  │  以寫鎖載入      │
-  │  Set / Evict     │  Lock/Unlock     │  寫者獨占        │
-  │  Len / Keys      │  RLock/RUnlock   │  只讀統計資訊    │
-  └──────────────────┴──────────────────┴──────────────────┘
-
-  多讀者並發示意：
-
-  Reader1 ──[RLock]──[讀 data]──[RUnlock]──
-  Reader2 ──[RLock]──[讀 data]──[RUnlock]──   ← 同時執行
-  Reader3 ──[RLock]──[讀 data]──[RUnlock]──
-                                          │
-                                          ▼
-  Writer  ──────────────────────[Lock]──[寫 data]──[Unlock]──
-                                 ↑
-                           等所有 Reader 退出後才能進入
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["Cache 結構設計與 RWMutex 保護範圍"]
+  N2["Cache 結構體"]
+  N3["data: HashMap RWMutex"]
+  N4["\"user:1\" 42 RLock() / RUnlock()"]
+  N5["\"user:2\" 18 ↑ 保護 data 的讀操作"]
+  N6["\"user:3\" 99"]
+  N7["... Lock() / Unlock()"]
+  N8["↑ 保護 data 的寫操作"]
+  N9["loader: fn(key) value"]
+  N10["↑ 當 cache miss 時，呼叫此函式載入資料"]
+  N11["操作與鎖的對應關係"]
+  N12["操作 使用的鎖 說明"]
+  N13["Get (hit) RLock/RUnlock 多讀者並發安全"]
+  N14["Get (miss) 先 RUnlock 釋放讀鎖後"]
+  N15["再 Lock/Unlock 以寫鎖載入"]
+  N16["Set / Evict Lock/Unlock 寫者獨占"]
+  N17["Len / Keys RLock/RUnlock 只讀統計資訊"]
+  N18["多讀者並發示意"]
+  N19["Reader1 [RLock] [讀 data] [RUnlock]"]
+  N20["Reader2 [RLock] [讀 data] [RUnlock] 同時執行"]
+  N21["Reader3 [RLock] [讀 data] [RUnlock]"]
+  N22["Writer [Lock] [寫 data] [Unlock]"]
+  N23["等所有 Reader 退出後才能進入"]
+  N0 --&gt; N1
+  N1 --&gt; N2
+  N1 --&gt; N3
+  N1 --&gt; N4
+  N1 --&gt; N5
+  N1 --&gt; N6
+  N1 --&gt; N7
+  N1 --&gt; N8
+  N1 --&gt; N9
+  N1 --&gt; N10
+  N1 --&gt; N11
+  N1 --&gt; N12
+  N1 --&gt; N13
+  N1 --&gt; N14
+  N1 --&gt; N15
+  N1 --&gt; N16
+  N1 --&gt; N17
+  N1 --&gt; N18
+  N1 --&gt; N19
+  N1 --&gt; N20
+  N1 --&gt; N21
+  N1 --&gt; N22
+  N22 --&gt; N23
 </code></pre>
 <p>快取容器 + 讀寫鎖 + 載入函式。</p>
 <h2 id="174-常見坑"><a class="header" href="#174-常見坑">17.4 常見坑</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
-<pre><code class="language-text">坑一：鎖升級死鎖
-
-  ┌──────────────────────────────────────────────────────────┐
-  │                    死鎖場景                               │
-  │                                                          │
-  │  Thread A                   RWMutex                      │
-  │  ─────────────────────────────────────────────────────   │
-  │  RLock() ─────────────────► 讀鎖已獲得（readers=1）      │
-  │  ... 處理中 ...                                          │
-  │  Lock() ──────────────────► 等待！因為讀鎖還在           │
-  │                             等所有讀者退出               │
-  │          ↑                         ↓                     │
-  │          └──── A 持有讀鎖 ─────── A 等寫鎖 ────► 死鎖！  │
-  │                                                          │
-  │  正確做法：                                               │
-  │  RLock()  ─► 讀 ─► RUnlock() ─► Lock() ─► 寫 ─► Unlock()│
-  │              ↑必須先釋放讀鎖，才能升級為寫鎖              │
-  └──────────────────────────────────────────────────────────┘
-
-坑二：缺少二次檢查 → 重複載入 DB
-
-  ┌──────────────────────────────────────────────────────────┐
-  │                 並發 Miss 場景                            │
-  │                                                          │
-  │  時間 ──────────────────────────────────────────────────►│
-  │                                                          │
-  │  T1: [RLock][miss][RUnlock]         [Lock][load DB!][Unlock]│
-  │  T2: [RLock][miss][RUnlock][等Lock─────────][load DB!][Unlock]│
-  │  T3: [RLock][miss][RUnlock][等等Lock──────────────][load DB!]│
-  │                                                          │
-  │  ↑ 沒有二次檢查 → 3 個執行緒都去 load DB → N 倍壓力！   │
-  │                                                          │
-  │  ─────────────────────────────────────────────────────── │
-  │                                                          │
-  │  T1: [RLock][miss][RUnlock]         [Lock][load DB][Unlock]│
-  │  T2: [RLock][miss][RUnlock][等Lock─────][二次檢查 hit! ][Unlock]│
-  │  T3: [RLock][miss][RUnlock][等等Lock──────][二次檢查 hit!][Unlock]│
-  │                                                          │
-  │  ↑ 有二次檢查 → 只有 T1 load DB，T2/T3 直接命中 ✓      │
-  └──────────────────────────────────────────────────────────┘
+<pre><code class="language-mermaid">flowchart TD
+  N0["本小節示意圖"]
+  N1["坑一: 鎖升級死鎖"]
+  N2["死鎖場景"]
+  N3["Thread A RWMutex"]
+  N4["RLock() 讀鎖已獲得（readers=1）"]
+  N5["... 處理中 ..."]
+  N6["Lock() 等待！因為讀鎖還在"]
+  N7["等所有讀者退出"]
+  N8["A 持有讀鎖 A 等寫鎖 死鎖！"]
+  N9["正確做法"]
+  N10["RLock() 讀 RUnlock() Lock() 寫 Unlock()"]
+  N11["↑必須先釋放讀鎖，才能升級為寫鎖"]
+  N12["坑二: 缺少二次檢查 重複載入 DB"]
+  N13["並發 Miss 場景"]
+  N14["時間"]
+  N15["T1: [RLock][miss][RUnlock] [Lock][load DB!][Unlock]"]
+  N16["T2: [RLock][miss][RUnlock][等Lock ][load DB!][Unlock]"]
+  N17["T3: [RLock][miss][RUnlock][等等Lock ][load DB!]"]
+  N18["↑ 沒有二次檢查 3 個執行緒都去 load DB N 倍壓力！"]
+  N19["T1: [RLock][miss][RUnlock] [Lock][load DB][Unlock]"]
+  N20["T2: [RLock][miss][RUnlock][等Lock ][二次檢查 hit! ][Unlock]"]
+  N21["T3: [RLock][miss][RUnlock][等等Lock ][二次檢查 hit!][Unlock]"]
+  N22["↑ 有二次檢查 只有 T1 load DB，T2/T3 直接命中 ✓"]
+  N0 --&gt; N1
+  N1 --&gt; N2
+  N1 --&gt; N3
+  N1 --&gt; N4
+  N1 --&gt; N5
+  N1 --&gt; N6
+  N1 --&gt; N7
+  N1 --&gt; N8
+  N1 --&gt; N9
+  N1 --&gt; N10
+  N1 --&gt; N11
+  N0 --&gt; N12
+  N12 --&gt; N13
+  N12 --&gt; N14
+  N12 --&gt; N15
+  N12 --&gt; N16
+  N12 --&gt; N17
+  N12 --&gt; N18
+  N12 --&gt; N19
+  N12 --&gt; N20
+  N12 --&gt; N21
+  N12 --&gt; N22
 </code></pre>
 <ul>
 <li>鎖升級死鎖</li>
@@ -736,6 +752,7 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
+        <script src="theme/beautiful-mermaid.js"></script>
 
 
 

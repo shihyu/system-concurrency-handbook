@@ -1,0 +1,16 @@
+.bm-diagram {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.bm-diagram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.bm-diagram.bm-error {
+  color: #b91c1c;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: pre-wrap;
+}
