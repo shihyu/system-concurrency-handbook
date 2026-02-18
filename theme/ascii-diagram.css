@@ -14,34 +14,11 @@ pre {
   overflow-x: auto;
 }
 
-:root {
-  --ascii-svg-font: "Sarasa Mono TC", "JetBrains Mono", "JetBrainsMono Nerd Font",
-    "Cascadia Mono", "Iosevka", "Noto Sans Mono CJK TC", "Noto Sans Mono CJK SC",
-    "Noto Sans Mono CJK JP", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", monospace;
-}
-
 .ascii-svg-wrap {
   margin: 1rem 0;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .ascii-svg {
   display: block;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-}
-
-.ascii-svg .ascii-text {
-  font-family: var(--ascii-svg-font);
-  font-weight: 400;
-  text-rendering: optimizeLegibility;
-  opacity: 0.92;
-}
-
-.ascii-svg .ascii-lines {
-  shape-rendering: geometricPrecision;
-  stroke-linejoin: miter;
-  opacity: 0.78;
 }
