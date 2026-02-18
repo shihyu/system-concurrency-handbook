@@ -178,7 +178,7 @@
                         <h1 id="第15章-手寫線程池實戰"><a class="header" href="#第15章-手寫線程池實戰">第15章 手寫線程池實戰</a></h1>
 <h2 id="151-結構設計"><a class="header" href="#151-結構設計">15.1 結構設計</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  ThreadPool 核心組件圖
 
   ┌─────────────────────────────────────────────────────────────────┐
@@ -222,7 +222,7 @@
 </ul>
 <h2 id="152-worker-邏輯"><a class="header" href="#152-worker-邏輯">15.2 Worker 邏輯</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  Worker 主循環流程圖
 
   Worker 執行緒啟動
@@ -269,7 +269,7 @@
 </ol>
 <h2 id="153-提交與關閉對應-15311536"><a class="header" href="#153-提交與關閉對應-15311536">15.3 提交與關閉（對應 15.3.1~15.3.6）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  submit(task) 流程圖
 
   submit(task)
@@ -318,7 +318,7 @@
 <p>關閉的正確姿勢是先呼叫 <code>shutdown()</code>，再以迴圈呼叫 <code>awaitTermination()</code> 直到返回 <code>true</code> 或超時強制中斷（<code>shutdownNow()</code>）。</p>
 <h2 id="154-測試"><a class="header" href="#154-測試">15.4 測試</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">  測試場景清單與期望行為
 
   ┌─────────────────────────────────────────────────────────────────┐

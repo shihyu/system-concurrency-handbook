@@ -178,7 +178,7 @@
                         <h1 id="第12章-鎖優化"><a class="header" href="#第12章-鎖優化">第12章 鎖優化</a></h1>
 <h2 id="121123-縮小鎖粒度"><a class="header" href="#121123-縮小鎖粒度">12.1~12.3 縮小鎖粒度</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  縮小鎖粒度：粗鎖 vs 細鎖
 
   ╔══════════════════════════════════════════════════════════════╗
@@ -214,7 +214,7 @@
 <p>鎖粒度（Lock Granularity）指的是一把鎖所保護的資料範圍。粗粒度鎖（如保護整個 Map）易於實作但並發度低；細粒度鎖（如每個 bucket 一把鎖）提升並發，但設計複雜度也上升。核心原則：<strong>只鎖真正需要保護的最小資料範圍</strong>。</p>
 <h2 id="124126-分段與分離"><a class="header" href="#124126-分段與分離">12.4~12.6 分段與分離</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  分段鎖（Sharded Lock）：key hash % 16 → shard[i]
 
   ┌─────────────────────────────────────────────────────────────┐
@@ -248,7 +248,7 @@
 <p>分段鎖是縮小鎖粒度的極致應用：將資料結構按某種規則（通常是 key 的 hash 值）切分為多個 shard，每個 shard 有獨立的鎖。操作時只鎖對應的 shard，其他 shard 的操作完全不受影響，理論並發度為 shard 數量。</p>
 <h2 id="127129-其他策略"><a class="header" href="#127129-其他策略">12.7~12.9 其他策略</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  鎖策略決策樹
 
   開始評估並發策略

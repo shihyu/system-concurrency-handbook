@@ -178,7 +178,7 @@
                         <h1 id="第20章-秒殺系統架構"><a class="header" href="#第20章-秒殺系統架構">第20章 秒殺系統架構</a></h1>
 <h2 id="201-電商基礎架構"><a class="header" href="#201-電商基礎架構">20.1 電商基礎架構</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">電商系統分層架構
 
   使用者請求
@@ -245,7 +245,7 @@
 <p>入口層、業務層、資料層、異步層缺一不可。</p>
 <h2 id="202-秒殺特性對應-20212022"><a class="header" href="#202-秒殺特性對應-20212022">20.2 秒殺特性（對應 20.2.1~20.2.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">正常流量 vs 秒殺瞬間流量對比
 
   QPS
@@ -287,7 +287,7 @@
 <p>高峰值、瞬時流量、熱點資料、低容錯窗口。</p>
 <h2 id="203-活動前中後對應-20312032"><a class="header" href="#203-活動前中後對應-20312032">20.3 活動前中後（對應 20.3.1~20.3.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">秒殺活動生命週期時間軸
 
   ─── 活動前（T0 之前）───────────────────────────────────────
@@ -338,7 +338,7 @@
 </ul>
 <h2 id="204-同步與異步下單對應-20412042"><a class="header" href="#204-同步與異步下單對應-20412042">20.4 同步與異步下單（對應 20.4.1~20.4.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">同步下單 vs 異步下單對比
 
   ─── 同步下單（直接寫 DB）───────────────────────────────────
@@ -386,7 +386,7 @@
 <p>同步直寫簡單但容易打爆；異步用 MQ 平滑流量。</p>
 <h2 id="205-扣庫存策略對應-20512055"><a class="header" href="#205-扣庫存策略對應-20512055">20.5 扣庫存策略（對應 20.5.1~20.5.5）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-4"><a class="header" href="#本小節示意圖ascii-4">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-4"><a class="header" href="#本小節示意圖-4">本小節示意圖</a></h3>
 <pre><code class="language-text">三種扣庫存時機比較
 
   ─── 策略一：下單時扣庫存 ──────────────────────────────────
@@ -442,7 +442,7 @@
 <p>下單扣、付款扣、預扣各有一致性風險。</p>
 <h2 id="206-redis-庫存與防超賣對應-20612064"><a class="header" href="#206-redis-庫存與防超賣對應-20612064">20.6 Redis 庫存與防超賣（對應 20.6.1~20.6.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-5"><a class="header" href="#本小節示意圖ascii-5">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-5"><a class="header" href="#本小節示意圖-5">本小節示意圖</a></h3>
 <pre><code class="language-text">Redis Lua 原子扣減防超賣 + SETNX 防重下單
 
   ─── Lua 原子扣減流程 ─────────────────────────────────────
@@ -501,7 +501,7 @@
 <p>原子扣減 + 分段庫存 + 防重 + 風控。</p>
 <h2 id="207-系統與網路優化對應-20712074"><a class="header" href="#207-系統與網路優化對應-20712074">20.7 系統與網路優化（對應 20.7.1~20.7.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-6"><a class="header" href="#本小節示意圖ascii-6">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-6"><a class="header" href="#本小節示意圖-6">本小節示意圖</a></h3>
 <pre><code class="language-text">系統調優清單
 
   ┌──────────────────────────────────────────────────────────────┐

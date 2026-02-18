@@ -178,7 +178,7 @@
                         <h1 id="第16章-cas-自旋鎖實戰"><a class="header" href="#第16章-cas-自旋鎖實戰">第16章 CAS 自旋鎖實戰</a></h1>
 <h2 id="161-目標"><a class="header" href="#161-目標">16.1 目標</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">三種鎖模式對比
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -216,7 +216,7 @@
 <p>用最少原語實作可用鎖，理解 lock-free 與 spin 的邊界。</p>
 <h2 id="162-核心做法"><a class="header" href="#162-核心做法">16.2 核心做法</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">自旋鎖 CAS 流程圖
 
   flag = 0（free）  flag = 1（held）
@@ -268,7 +268,7 @@
 <p>用 <code>atomic_flag</code> 或 CAS 標記鎖是否被占用。</p>
 <h2 id="163-自旋成本"><a class="header" href="#163-自旋成本">16.3 自旋成本</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">低衝突 vs 高衝突時間軸
 
   ─── 低衝突場景（臨界區極短）───────────────────────────────────
@@ -313,7 +313,7 @@
 <p>低衝突很快；高衝突會燒 CPU。</p>
 <h2 id="164-工程補強"><a class="header" href="#164-工程補強">16.4 工程補強</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">自旋退避策略演進圖
 
   自旋失敗次數

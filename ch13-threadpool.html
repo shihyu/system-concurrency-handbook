@@ -178,7 +178,7 @@
                         <h1 id="第13章-線程池"><a class="header" href="#第13章-線程池">第13章 線程池</a></h1>
 <h2 id="131-狀態與生命週期對應-13111312"><a class="header" href="#131-狀態與生命週期對應-13111312">13.1 狀態與生命週期（對應 13.1.1~13.1.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  線程池狀態機
 
                     ┌─────────────┐
@@ -214,7 +214,7 @@
 <p>線程池維護一組預先建立的執行緒，持續從任務佇列取出任務執行。這樣避免了頻繁建立/銷毀執行緒的開銷（每次建立約耗費數十微秒），並提供統一的資源上限，防止系統因過多執行緒而耗盡記憶體。</p>
 <h2 id="132-建立方式對應-13211324"><a class="header" href="#132-建立方式對應-13211324">13.2 建立方式（對應 13.2.1~13.2.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  四種線程池類型對比
 
   ┌─────────────┬──────────────────┬─────────────────┬──────────────────┐
@@ -244,7 +244,7 @@
 <p>固定池、快取池、排程池、分治池各有適用場景。選錯類型可能導致記憶體耗盡（Cached pool 在爆發流量下無限建執行緒）或效能低下（Fixed pool 在 I/O 密集時執行緒閒置）。</p>
 <h2 id="133-提交流程與拒絕策略對應-13311332"><a class="header" href="#133-提交流程與拒絕策略對應-13311332">13.3 提交流程與拒絕策略（對應 13.3.1~13.3.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  submit(task) 完整決策流程
 
   submit(task)
@@ -280,7 +280,7 @@
 <p>任務提交時，線程池按優先級嘗試：先用核心執行緒，再入佇列，再擴展到最大執行緒數，最後觸發拒絕策略。理解這個流程對調參（corePoolSize、maxPoolSize、queueCapacity）至關重要。</p>
 <h2 id="134-關閉對應-13411342"><a class="header" href="#134-關閉對應-13411342">13.4 關閉（對應 13.4.1~13.4.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">  兩種關閉方式對比
 
   ┌──────────────────────────────────────────────────────────────┐
@@ -320,7 +320,7 @@
 <p>實務上應搭配 <code>awaitTermination(timeout)</code> 等待關閉完成，避免主程式提前退出導致任務被截斷。</p>
 <h2 id="135-參數調優對應-13511352"><a class="header" href="#135-參數調優對應-13511352">13.5 參數調優（對應 13.5.1~13.5.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-4"><a class="header" href="#本小節示意圖ascii-4">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-4"><a class="header" href="#本小節示意圖-4">本小節示意圖</a></h3>
 <pre><code class="language-text">  線程數調優公式
 
   ┌─────────────────────────────────────────────────────────────┐

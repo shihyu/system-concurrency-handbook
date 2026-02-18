@@ -178,7 +178,7 @@
                         <h1 id="第5章-原子性底層"><a class="header" href="#第5章-原子性底層">第5章 原子性底層</a></h1>
 <h2 id="51-原子性定義"><a class="header" href="#51-原子性定義">5.1 原子性定義</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">原子性定義：「不可被拆開觀察，要嘛全成功，要嘛回到原狀」
 
   骰子比喻（原子操作的語意）：
@@ -228,7 +228,7 @@
 <p>一個操作不可被拆開觀察，要嘛全成，要嘛全不成。</p>
 <h2 id="52-cpu-如何做原子對應-521523"><a class="header" href="#52-cpu-如何做原子對應-521523">5.2 CPU 如何做原子（對應 5.2.1~5.2.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">CPU 實現原子操作的三種方式：
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -297,7 +297,7 @@
 </ul>
 <h2 id="53-互斥鎖模型對應-531532"><a class="header" href="#53-互斥鎖模型對應-531532">5.3 互斥鎖模型（對應 5.3.1~5.3.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">互斥鎖完整生命週期（含 OS 阻塞/喚醒路徑）：
 
   Thread 1 時間軸：
@@ -340,7 +340,7 @@
 <p>鎖把臨界區包起來，保證同時只有一個執行緒改共享資料。</p>
 <h2 id="54-cas"><a class="header" href="#54-cas">5.4 CAS</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">CAS（Compare-And-Swap）完整流程：
 
   呼叫：CAS(addr, expected=10, new=11)

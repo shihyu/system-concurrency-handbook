@@ -178,7 +178,7 @@
                         <h1 id="第10章-cas"><a class="header" href="#第10章-cas">第10章 CAS</a></h1>
 <h2 id="101-cas-基本模型"><a class="header" href="#101-cas-基本模型">10.1 CAS 基本模型</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  CAS（Compare-And-Swap）基本模型
   ════════════════════════════════════════════════════════
 
@@ -232,7 +232,7 @@
 <p>Compare-And-Swap：比較並交換。</p>
 <h2 id="102-底層支持對應-10211022"><a class="header" href="#102-底層支持對應-10211022">10.2 底層支持（對應 10.2.1~10.2.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  Intel x86 LOCK CMPXCHG vs ARM LL/SC
   ════════════════════════════════════════════════════════
 
@@ -300,7 +300,7 @@
 <p>依賴 CPU 原子指令；Java <code>Unsafe/VarHandle</code>、C++ <code>atomic</code>、Rust <code>Atomic*</code>、Go <code>sync/atomic</code>。</p>
 <h2 id="103-cas-實作計數器對應-10311033"><a class="header" href="#103-cas-實作計數器對應-10311033">10.3 CAS 實作計數器（對應 10.3.1~10.3.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  CAS 自旋計數器流程
   ════════════════════════════════════════════════════════
 
@@ -347,7 +347,7 @@
 </code></pre>
 <h2 id="104-aba-問題對應-10411043"><a class="header" href="#104-aba-問題對應-10411043">10.4 ABA 問題（對應 10.4.1~10.4.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">  ABA 問題時間軸與帶版本號解法
   ════════════════════════════════════════════════════════
 

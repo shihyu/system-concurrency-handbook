@@ -178,7 +178,7 @@
                         <h1 id="第17章-讀寫鎖快取實戰"><a class="header" href="#第17章-讀寫鎖快取實戰">第17章 讀寫鎖快取實戰</a></h1>
 <h2 id="171-場景"><a class="header" href="#171-場景">17.1 場景</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">讀寫比例與並發度對比
 
   典型快取存取分布：
@@ -222,7 +222,7 @@
 <p>讀多寫少的快取查詢。</p>
 <h2 id="172-基本模式"><a class="header" href="#172-基本模式">17.2 基本模式</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">Cache 查找完整流程（含雙重檢查）
 
   客戶端請求 key
@@ -293,7 +293,7 @@
 </ul>
 <h2 id="173-結構設計對應-17311732"><a class="header" href="#173-結構設計對應-17311732">17.3 結構設計（對應 17.3.1~17.3.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">Cache 結構設計與 RWMutex 保護範圍
 
   ┌─────────────────────────────────────────────────────────┐
@@ -340,7 +340,7 @@
 <p>快取容器 + 讀寫鎖 + 載入函式。</p>
 <h2 id="174-常見坑"><a class="header" href="#174-常見坑">17.4 常見坑</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">坑一：鎖升級死鎖
 
   ┌──────────────────────────────────────────────────────────┐

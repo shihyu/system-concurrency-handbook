@@ -178,7 +178,7 @@
                         <h1 id="第11章-死鎖"><a class="header" href="#第11章-死鎖">第11章 死鎖</a></h1>
 <h2 id="111-死鎖定義"><a class="header" href="#111-死鎖定義">11.1 死鎖定義</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  資源分配圖：循環等待形成死鎖
 
   ┌─────────────┐         ┌─────────────┐
@@ -203,7 +203,7 @@
 <p>死鎖（Deadlock）是指一組執行緒陷入永久等待的狀態：每個執行緒都在等待另一個執行緒持有的資源，而那個執行緒也在等待更多資源，形成一個閉合的等待環。作業系統無法自動解除這種僵局，程式將永久掛起。</p>
 <h2 id="112-演化過程對應-11211123"><a class="header" href="#112-演化過程對應-11211123">11.2 演化過程（對應 11.2.1~11.2.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  時間軸：安全狀態 → 不安全狀態 → 死鎖
 
   時間點   Thread T1              Thread T2            系統狀態
@@ -231,7 +231,7 @@
 <p>死鎖的形成通常是逐步的：系統從安全狀態出發，隨著執行緒依序取得部分資源，進入不安全狀態，最終當所有執行緒都在等待對方持有的資源時，死鎖完成。</p>
 <h2 id="113-四必要條件"><a class="header" href="#113-四必要條件">11.3 四必要條件</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  死鎖四必要條件（缺一不可）
 
   ┌────────────────────────────────────────────────────────────────┐
@@ -287,7 +287,7 @@
 <p>四個條件缺一不可，破壞其中任何一個即可預防死鎖。</p>
 <h2 id="114-預防與處理"><a class="header" href="#114-預防與處理">11.4 預防與處理</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">  三種策略對比
 
   ┌──────────────────┬───────────────────────────┬──────────────────────┐

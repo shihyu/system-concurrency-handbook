@@ -178,7 +178,7 @@
                         <h1 id="第7章-synchronized-與-jvm-鎖實作"><a class="header" href="#第7章-synchronized-與-jvm-鎖實作">第7章 synchronized 與 JVM 鎖實作</a></h1>
 <h2 id="71-語法層對應-711713"><a class="header" href="#71-語法層對應-711713">7.1 語法層（對應 7.1.1~7.1.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  synchronized 三種語法形式與 bytecode 對應
   ════════════════════════════════════════════════════════
 
@@ -242,7 +242,7 @@
 </ul>
 <h2 id="7273-物件頭與鎖標記對應-721733"><a class="header" href="#7273-物件頭與鎖標記對應-721733">7.2~7.3 物件頭與鎖標記（對應 7.2.1~7.3.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  64-bit JVM 物件頭（Mark Word）布局
   ════════════════════════════════════════════════════════
 
@@ -295,7 +295,7 @@
 <p>這是 JVM 實作細節：物件頭記錄鎖狀態。</p>
 <h2 id="7475-monitor-與-bytecode對應-741754"><a class="header" href="#7475-monitor-與-bytecode對應-741754">7.4~7.5 Monitor 與 bytecode（對應 7.4.1~7.5.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  ObjectMonitor 結構與 monitorenter/exit 流程
   ════════════════════════════════════════════════════════
 
@@ -353,7 +353,7 @@
 <p>進入臨界區會走 <code>monitorenter</code>，離開走 <code>monitorexit</code>。</p>
 <h2 id="76710-鎖升級與優化對應-76710"><a class="header" href="#76710-鎖升級與優化對應-76710">7.6~7.10 鎖升級與優化（對應 7.6~7.10）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">  JVM 鎖升級路徑（只能升級，不可降級）
   ════════════════════════════════════════════════════════
 

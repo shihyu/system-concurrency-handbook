@@ -178,7 +178,7 @@
                         <h1 id="第14章-threadlocal"><a class="header" href="#第14章-threadlocal">第14章 ThreadLocal</a></h1>
 <h2 id="141143-存取機制對應-1411434"><a class="header" href="#141143-存取機制對應-1411434">14.1~14.3 存取機制（對應 14.1~14.3.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  ThreadLocal 存取機制：Thread 內部結構圖
 
   ┌─────────────────────────────────────────────────────────────────┐
@@ -227,7 +227,7 @@
 <p>關鍵細節：Map 中的 key 是弱引用（WeakReference），若 ThreadLocal 實例沒有外部強引用而被 GC 回收，key 就會變成 null，但 value 仍被 Entry 強引用，造成洩漏。執行緒池中的執行緒長期存活，此問題尤為危險。</p>
 <h2 id="144-不繼承性"><a class="header" href="#144-不繼承性">14.4 不繼承性</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  父執行緒 vs 子執行緒的 ThreadLocal 隔離
 
   ┌─────────────────────────────────────────────────────────────────┐
@@ -256,7 +256,7 @@
 <p>這個設計是有意的：ThreadLocal 的語義是「執行緒私有」，若自動繼承反而破壞隔離性。但在請求追蹤（Trace ID）等場景確實需要傳遞上下文，此時應使用 InheritableThreadLocal 或顯式傳遞。</p>
 <h2 id="145146-可繼承變體"><a class="header" href="#145146-可繼承變體">14.5~14.6 可繼承變體</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  InheritableThreadLocal：建立子執行緒時複製快照
 
   ┌─────────────────────────────────────────────────────────────────┐

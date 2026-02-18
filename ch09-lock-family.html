@@ -178,7 +178,7 @@
                         <h1 id="第9章-lock-家族"><a class="header" href="#第9章-lock-家族">第9章 Lock 家族</a></h1>
 <h2 id="91-顯式鎖"><a class="header" href="#91-顯式鎖">9.1 顯式鎖</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  顯式鎖三種獲取路徑對比
   ════════════════════════════════════════════════════════
 
@@ -238,7 +238,7 @@
 <p>比 <code>synchronized</code> 更可控：可中斷、可超時、可嘗試。</p>
 <h2 id="92-公平與非公平對應-921926"><a class="header" href="#92-公平與非公平對應-921926">9.2 公平與非公平（對應 9.2.1~9.2.6）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  公平鎖 vs 非公平鎖競爭示意
   ════════════════════════════════════════════════════════
 
@@ -289,7 +289,7 @@
 <p>公平降低飢餓但吞吐可能較低；非公平吞吐高但可能插隊。</p>
 <h2 id="93-悲觀與樂觀對應-931934"><a class="header" href="#93-悲觀與樂觀對應-931934">9.3 悲觀與樂觀（對應 9.3.1~9.3.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  悲觀鎖 vs 樂觀鎖（CAS）流程對比
   ════════════════════════════════════════════════════════
 
@@ -349,7 +349,7 @@
 <p>衝突高用悲觀鎖，衝突低可走 CAS/版本號。</p>
 <h2 id="94-可中斷對應-941944"><a class="header" href="#94-可中斷對應-941944">9.4 可中斷（對應 9.4.1~9.4.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">  可中斷等待 vs 不可中斷等待對比
   ════════════════════════════════════════════════════════
 
@@ -389,7 +389,7 @@
 <p>等待鎖時可取消，避免永久卡死。</p>
 <h2 id="95-獨占共享對應-951954"><a class="header" href="#95-獨占共享對應-951954">9.5 獨占/共享（對應 9.5.1~9.5.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-4"><a class="header" href="#本小節示意圖ascii-4">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-4"><a class="header" href="#本小節示意圖-4">本小節示意圖</a></h3>
 <pre><code class="language-text">  獨占鎖 vs 共享鎖 相容矩陣
   ════════════════════════════════════════════════════════
 
@@ -424,7 +424,7 @@
 <p>不同資源特性選不同模型。</p>
 <h2 id="96-可重入對應-961962"><a class="header" href="#96-可重入對應-961962">9.6 可重入（對應 9.6.1~9.6.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-5"><a class="header" href="#本小節示意圖ascii-5">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-5"><a class="header" href="#本小節示意圖-5">本小節示意圖</a></h3>
 <pre><code class="language-text">  可重入鎖（Reentrant Lock）計數器機制
   ════════════════════════════════════════════════════════
 
@@ -467,7 +467,7 @@
 <p>同執行緒可重複拿同一把鎖，靠計數器解決遞迴鎖死。</p>
 <h2 id="97-讀寫鎖對應-971976"><a class="header" href="#97-讀寫鎖對應-971976">9.7 讀寫鎖（對應 9.7.1~9.7.6）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-6"><a class="header" href="#本小節示意圖ascii-6">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-6"><a class="header" href="#本小節示意圖-6">本小節示意圖</a></h3>
 <pre><code class="language-text">  讀寫鎖時間軸示意
   ════════════════════════════════════════════════════════
 
@@ -504,7 +504,7 @@
 <p>讀多寫少場景常見，讀可併發、寫需獨占。</p>
 <h2 id="98-parkunpark對應-981982"><a class="header" href="#98-parkunpark對應-981982">9.8 park/unpark（對應 9.8.1~9.8.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-7"><a class="header" href="#本小節示意圖ascii-7">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-7"><a class="header" href="#本小節示意圖-7">本小節示意圖</a></h3>
 <pre><code class="language-text">  LockSupport.park / unpark 原語
   ════════════════════════════════════════════════════════
 

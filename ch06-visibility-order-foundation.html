@@ -178,7 +178,7 @@
                         <h1 id="第6章-可見性與有序性底層"><a class="header" href="#第6章-可見性與有序性底層">第6章 可見性與有序性底層</a></h1>
 <h2 id="61-多級快取對應-611613"><a class="header" href="#61-多級快取對應-611613">6.1 多級快取（對應 6.1.1~6.1.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">  多核 CPU 多級快取延遲金字塔
   ════════════════════════════════════════════════════════
 
@@ -239,7 +239,7 @@
 <p>L1/L2/L3 讓 CPU 讀寫更快，但也帶來多副本一致性問題。</p>
 <h2 id="62-快取一致性對應-621625"><a class="header" href="#62-快取一致性對應-621625">6.2 快取一致性（對應 6.2.1~6.2.5）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">  MESI 協議四狀態轉換圖
   ════════════════════════════════════════════════════════
 
@@ -297,7 +297,7 @@
 <p>MESI 等協議保證核心間最終一致。</p>
 <h2 id="63-偽共享對應-631633"><a class="header" href="#63-偽共享對應-631633">6.3 偽共享（對應 6.3.1~6.3.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">  偽共享（False Sharing）問題示意
   ════════════════════════════════════════════════════════
 
@@ -346,7 +346,7 @@
 <p>不同變數落在同一 cache line，互相拖慢。</p>
 <h2 id="64-volatile-類語義對應-641643"><a class="header" href="#64-volatile-類語義對應-641643">6.4 volatile 類語義（對應 6.4.1~6.4.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">  volatile 可見性語義：寫前 StoreStore + 讀後 LoadLoad
   ════════════════════════════════════════════════════════
 
@@ -390,7 +390,7 @@
 <p>可見性強，但不保證複合操作原子性。</p>
 <h2 id="65-指令重排與屏障對應-651654"><a class="header" href="#65-指令重排與屏障對應-651654">6.5 指令重排與屏障（對應 6.5.1~6.5.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-4"><a class="header" href="#本小節示意圖ascii-4">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-4"><a class="header" href="#本小節示意圖-4">本小節示意圖</a></h3>
 <pre><code class="language-text">  四種記憶體屏障（Memory Fence）類型
   ════════════════════════════════════════════════════════
 
@@ -448,7 +448,7 @@
 <p>Memory Fence 阻止特定方向的重排。</p>
 <h2 id="66-記憶體模型對應-661663"><a class="header" href="#66-記憶體模型對應-661663">6.6 記憶體模型（對應 6.6.1~6.6.3）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-5"><a class="header" href="#本小節示意圖ascii-5">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-5"><a class="header" href="#本小節示意圖-5">本小節示意圖</a></h3>
 <pre><code class="language-text">  各語言記憶體模型與同步 API 對比
   ════════════════════════════════════════════════════════
 
@@ -485,7 +485,7 @@
 <p>Java、C++、Rust、Go 都定義了跨執行緒可見性規則。</p>
 <h2 id="67-happens-before對應-671679"><a class="header" href="#67-happens-before對應-671679">6.7 happens-before（對應 6.7.1~6.7.9）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-6"><a class="header" href="#本小節示意圖ascii-6">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-6"><a class="header" href="#本小節示意圖-6">本小節示意圖</a></h3>
 <pre><code class="language-text">  happens-before（HB）傳遞鏈示意
   ════════════════════════════════════════════════════════
 

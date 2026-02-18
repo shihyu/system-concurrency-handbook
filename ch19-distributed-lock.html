@@ -178,7 +178,7 @@
                         <h1 id="第19章-分散式鎖架構"><a class="header" href="#第19章-分散式鎖架構">第19章 分散式鎖架構</a></h1>
 <h2 id="191-為什麼需要分散式鎖"><a class="header" href="#191-為什麼需要分散式鎖">19.1 為什麼需要分散式鎖</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">單節點 vs 多節點鎖的邊界
 
   ─── 單節點（JVM Mutex 夠用）─────────────────────────────────
@@ -234,7 +234,7 @@
 <p>單機鎖只能管單進程，服務多副本時會失效。</p>
 <h2 id="192-超賣案例對應-19211922"><a class="header" href="#192-超賣案例對應-19211922">19.2 超賣案例（對應 19.2.1~19.2.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">read-modify-write 競態導致超賣
 
   時間軸 ──────────────────────────────────────────────────────►
@@ -268,7 +268,7 @@
 <p>多節點同時扣庫存，若無跨節點互斥，庫存會變負數。</p>
 <h2 id="193-jvm-本地鎖邊界對應-19311932"><a class="header" href="#193-jvm-本地鎖邊界對應-19311932">19.3 JVM 本地鎖邊界（對應 19.3.1~19.3.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">JVM 本地鎖的可見範圍邊界
 
   ┌──────────────────────────────────────────────────────────────┐
@@ -311,7 +311,7 @@
 <p><code>synchronized</code> 只在同 JVM 內有效。</p>
 <h2 id="194-分散式鎖要求對應-19411942"><a class="header" href="#194-分散式鎖要求對應-19411942">19.4 分散式鎖要求（對應 19.4.1~19.4.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">分散式鎖五大需求與實現挑戰
 
   ┌──────────────────────────────────────────────────────────────┐
@@ -364,7 +364,7 @@
 </ul>
 <h2 id="195-apcp-取捨對應-19511954"><a class="header" href="#195-apcp-取捨對應-19511954">19.5 AP/CP 取捨（對應 19.5.1~19.5.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-4"><a class="header" href="#本小節示意圖ascii-4">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-4"><a class="header" href="#本小節示意圖-4">本小節示意圖</a></h3>
 <pre><code class="language-text">CAP 定理與分散式鎖選型
 
            一致性 (C)
@@ -420,7 +420,7 @@
 <p>Redis 常偏 AP；ZooKeeper 常偏 CP。</p>
 <h2 id="196-redis-鎖演進對應-196119612"><a class="header" href="#196-redis-鎖演進對應-196119612">19.6 Redis 鎖演進（對應 19.6.1~19.6.12）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-5"><a class="header" href="#本小節示意圖ascii-5">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-5"><a class="header" href="#本小節示意圖-5">本小節示意圖</a></h3>
 <pre><code class="language-text">Redis 分散式鎖四代演進
 
   ─────────────────────────────────────────────────────────────

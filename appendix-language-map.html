@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>附錄：Java/C++/Rust/Go 對照速查 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+        <title>附錄：C/C++/Rust/Go/Python 對照速查 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
 
 
         <!-- Custom HTML head -->
@@ -175,15 +175,20 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="附錄javacrustgo-對照速查"><a class="header" href="#附錄javacrustgo-對照速查">附錄：Java/C++/Rust/Go 對照速查</a></h1>
-<div class="table-wrapper"><table><thead><tr><th>主題</th><th>Java</th><th>C/C++</th><th>Rust</th><th>Go</th></tr></thead><tbody>
-<tr><td>線程</td><td>Thread</td><td>std::thread/pthread</td><td>std::thread</td><td>goroutine</td></tr>
-<tr><td>互斥鎖</td><td>synchronized/ReentrantLock</td><td>std::mutex</td><td>Mutex<T></td><td>sync.Mutex</td></tr>
-<tr><td>讀寫鎖</td><td>ReadWriteLock/StampedLock</td><td>std::shared_mutex</td><td>RwLock<T></td><td>sync.RWMutex</td></tr>
-<tr><td>條件變數</td><td>wait/notify/Condition</td><td>condition_variable</td><td>Condvar</td><td>sync.Cond</td></tr>
-<tr><td>原子</td><td>Atomic*</td><td>std::atomic</td><td>Atomic*</td><td>sync/atomic</td></tr>
-<tr><td>中斷/取消</td><td>interrupt</td><td>stop flag/token</td><td>cancellation token</td><td>context.WithCancel</td></tr>
-<tr><td>線程池</td><td>ThreadPoolExecutor</td><td>自建/TBB</td><td>rayon/tokio</td><td>worker pool 慣例</td></tr>
+                        <h1 id="附錄ccrustgopython-對照速查"><a class="header" href="#附錄ccrustgopython-對照速查">附錄：C/C++/Rust/Go/Python 對照速查</a></h1>
+<div class="table-wrapper"><table><thead><tr><th>主題</th><th>C/C++</th><th>Rust</th><th>Go</th><th>Python</th></tr></thead><tbody>
+<tr><td>執行單元</td><td>pthread / std::thread</td><td>std::thread / tokio::spawn</td><td>goroutine</td><td>threading.Thread</td></tr>
+<tr><td>互斥鎖</td><td>pthread_mutex / std::mutex</td><td>Mutex&lt;T&gt;</td><td>sync.Mutex</td><td>threading.Lock()</td></tr>
+<tr><td>讀寫鎖</td><td>pthread_rwlock / std::shared_mutex</td><td>RwLock&lt;T&gt;</td><td>sync.RWMutex</td><td>threading.RLock()</td></tr>
+<tr><td>條件變數</td><td>pthread_cond / condition_variable</td><td>Condvar</td><td>sync.Cond</td><td>threading.Condition</td></tr>
+<tr><td>原子操作</td><td>stdatomic.h / std::atomic</td><td>Atomic* (SeqCst/Acquire/Release)</td><td>sync/atomic</td><td>threading.Lock()(模擬)</td></tr>
+<tr><td>信號量</td><td>sem_t / counting_semaphore</td><td>Mutex+Condvar / tokio::Semaphore</td><td>channel(buffered)</td><td>threading.Semaphore</td></tr>
+<tr><td>執行緒本地</td><td>__thread / thread_local</td><td>thread_local!</td><td>context.Context(顯式傳遞)</td><td>threading.local()</td></tr>
+<tr><td>執行緒池</td><td>自建 / OpenMP</td><td>rayon::ThreadPool / tokio</td><td>worker+channel 慣例</td><td>ThreadPoolExecutor</td></tr>
+<tr><td>中斷/取消</td><td>stop flag / std::stop_token</td><td>無內建，用 channel</td><td>context.WithCancel</td><td>threading.Event</td></tr>
+<tr><td>記憶體順序</td><td>memory_order_*</td><td>Ordering::*</td><td>sync/atomic (無細粒度)</td><td>GIL 保證(CPython)</td></tr>
+<tr><td>無鎖計數器</td><td>atomic_fetch_add</td><td>fetch_add(Ordering)</td><td>atomic.AddInt64</td><td>需 Lock(GIL 不保證)</td></tr>
+<tr><td>分散式鎖</td><td>不內建</td><td>不內建</td><td>不內建</td><td>不內建(需 Redis 等)</td></tr>
 </tbody></table>
 </div>
 <h2 id="一個跨語言都成立的原則"><a class="header" href="#一個跨語言都成立的原則">一個跨語言都成立的原則</a></h2>
@@ -195,15 +200,65 @@
 2) 需要複合一致性時改用 lock
 3) 併發量大再加 queue/pool/backpressure
 </code></pre>
-<pre><code class="language-java">// atomic -&gt; lock 的常見升級路徑
+<pre><code class="language-c">// C: atomic -&gt; mutex 升級路徑
+#include &lt;stdatomic.h&gt;
+#include &lt;pthread.h&gt;
+atomic_int counter = 0;          // 單變數競態 → atomic
+pthread_mutex_t mu;              // 複合操作 → mutex
 </code></pre>
-<pre><code class="language-cpp">// std::atomic -&gt; std::mutex
+<pre><code class="language-cpp">// C++: atomic -&gt; mutex 升級路徑
+#include &lt;atomic&gt;
+#include &lt;mutex&gt;
+std::atomic&lt;int&gt; counter{0};    // 單變數
+std::mutex mu;                  // 複合操作
 </code></pre>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>// Atomic* -&gt; Mutex/RwLock
+</span>// Rust: Atomic* -&gt; Mutex/RwLock
+use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::{Mutex, RwLock};
+static COUNTER: AtomicI32 = AtomicI32::new(0);  // 單變數
+let shared = Mutex::new(HashMap::new());         // 複合操作
 <span class="boring">}</span></code></pre></pre>
-<pre><code class="language-go">// sync/atomic -&gt; sync.Mutex/RWMutex
+<pre><code class="language-go">// Go: sync/atomic -&gt; sync.Mutex/RWMutex
+import "sync/atomic"
+import "sync"
+var counter atomic.Int64          // 單變數
+var mu sync.Mutex                 // 複合操作
+</code></pre>
+<pre><code class="language-python"># Python: Lock 保護複合操作（CPython GIL 不保證原子性）
+import threading
+lock = threading.Lock()
+counter = 0                       # 不安全（GIL 不保證 counter += 1）
+with lock:                        # 安全的複合操作
+    counter += 1
+</code></pre>
+<h2 id="python-特別說明"><a class="header" href="#python-特別說明">Python 特別說明</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>項目</th><th>CPython 行為</th><th>注意事項</th></tr></thead><tbody>
+<tr><td>GIL（全域直譯器鎖）</td><td>同一時刻只有一個執行緒跑 Python bytecode</td><td>I/O 密集可受益，CPU 密集用 multiprocessing</td></tr>
+<tr><td><code>counter += 1</code></td><td><strong>不是原子</strong>（3 條 bytecode：LOAD/BINARY_ADD/STORE）</td><td>需加 Lock</td></tr>
+<tr><td><code>threading.Lock</code></td><td>OS mutex 封裝</td><td>可跨執行緒互斥</td></tr>
+<tr><td><code>threading.RLock</code></td><td>可重入鎖</td><td>同執行緒可多次 acquire</td></tr>
+<tr><td>真正並行</td><td><code>multiprocessing</code> / <code>concurrent.futures.ProcessPoolExecutor</code></td><td>各自有獨立 GIL</td></tr>
+<tr><td>異步並發</td><td><code>asyncio</code>（單執行緒事件迴圈）</td><td>適合 I/O 密集，非多核並行</td></tr>
+</tbody></table>
+</div>
+<h2 id="選型快速決策"><a class="header" href="#選型快速決策">選型快速決策</a></h2>
+<pre><code class="language-text">需要多核 CPU 並行運算？
+  ├─ 是 → C/C++/Rust/Go（Python 用 multiprocessing）
+  └─ 否（I/O 密集）→ 各語言都行，Python asyncio 亦可
+
+需要極低延遲無 GC？
+  └─ C/C++/Rust
+
+需要記憶體安全無 data race 編譯期保證？
+  └─ Rust
+
+需要最簡單的並發模型？
+  └─ Go（goroutine + channel）
+
+需要快速腳本/原型？
+  └─ Python（注意 GIL 限制）
 </code></pre>
 
                     </main>

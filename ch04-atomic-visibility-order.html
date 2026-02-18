@@ -178,7 +178,7 @@
                         <h1 id="第4章-本質問題原子性可見性有序性"><a class="header" href="#第4章-本質問題原子性可見性有序性">第4章 本質問題：原子性、可見性、有序性</a></h1>
 <h2 id="41-背景對應-411415"><a class="header" href="#41-背景對應-411415">4.1 背景（對應 4.1.1~4.1.5）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
 <pre><code class="language-text">程式從源碼到執行的完整路徑，每個階段都可能引入問題：
 
   ┌──────────────────────────────────────────────────────────────────────────┐
@@ -222,7 +222,7 @@
 <p>CPU、快取、編譯器優化都會讓「你以為的順序」和實際執行不同。</p>
 <h2 id="42-原子性對應-421424"><a class="header" href="#42-原子性對應-421424">4.2 原子性（對應 4.2.1~4.2.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
 <pre><code class="language-text">x++ 非原子性拆解（Read-Modify-Write 三步）：
 
   高層語義（你寫的）：
@@ -264,7 +264,7 @@
 <p><code>x++</code> 不是原子，實際是讀、改、寫三步。</p>
 <h2 id="43-可見性對應-431434"><a class="header" href="#43-可見性對應-431434">4.3 可見性（對應 4.3.1~4.3.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
 <pre><code class="language-text">快取不一致導致可見性問題：
 
   ┌─────────────────────────────┐     ┌─────────────────────────────┐
@@ -305,7 +305,7 @@
 <p>A 執行緒改值，B 不一定立刻看得到，可能讀到舊快取。</p>
 <h2 id="44-有序性對應-441444"><a class="header" href="#44-有序性對應-441444">4.4 有序性（對應 4.4.1~4.4.4）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
 <pre><code class="language-text">指令重排導致有序性問題：
 
   程式員視角（期望的執行順序）：
@@ -357,7 +357,7 @@
 <p>指令可能重排，只要單執行緒語義不變，編譯器就可能調整。</p>
 <h2 id="45-綜合解法對應-451452"><a class="header" href="#45-綜合解法對應-451452">4.5 綜合解法（對應 4.5.1~4.5.2）</a></h2>
 <!-- subsection-diagram -->
-<h3 id="本小節示意圖ascii-4"><a class="header" href="#本小節示意圖ascii-4">本小節示意圖（ASCII）</a></h3>
+<h3 id="本小節示意圖-4"><a class="header" href="#本小節示意圖-4">本小節示意圖</a></h3>
 <pre><code class="language-text">三種問題 vs 三種解法對比：
 
   ┌──────────────────┬────────────────────────────────────────────────────────────┐
