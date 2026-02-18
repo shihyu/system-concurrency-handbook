@@ -29,7 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/beautiful-mermaid.css">
+        <link rel="stylesheet" href="theme/ascii-diagram.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -180,48 +180,39 @@
 <h2 id="151-結構設計"><a class="header" href="#151-結構設計">15.1 結構設計</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["ThreadPool 核心組件圖"]
-  N2["ThreadPool"]
-  N3["state: AtomicInteger"]
-  N4["RUNNING SHUTDOWN STOP TERMINATED"]
-  N5["控制"]
-  N6["task_queue workers"]
-  N7["BlockingQueue Set&amp;lt;Thread&amp;gt;"]
-  N8["協作"]
-  N9["[Task][Task] poll() [W1][W2][W3][W4]"]
-  N10["[Task][Task] ↑執行任務↑"]
-  N11["submit()"]
-  N12["飽和時觸發"]
-  N13["外部呼叫方 reject_policy"]
-  N14["(Producer) RejectedExecutionHandler"]
-  N15["Abort / CallerRuns / Discard"]
-  N16["組件職責"]
-  N17["• task_queue: 緩衝待執行任務，解耦生產者與消費者"]
-  N18["• workers: 實際執行任務的執行緒集合，數量在 [core, max] 間調整"]
-  N19["• state: 協調關閉流程，防止競態"]
-  N20["• reject_policy: 佇列+執行緒都滿時的降級策略"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N0 --&gt; N7
-  N0 --&gt; N8
-  N0 --&gt; N9
-  N0 --&gt; N10
-  N0 --&gt; N11
-  N0 --&gt; N12
-  N0 --&gt; N13
-  N0 --&gt; N14
-  N0 --&gt; N15
-  N0 --&gt; N16
-  N0 --&gt; N17
-  N0 --&gt; N18
-  N0 --&gt; N19
-  N0 --&gt; N20
+<pre><code class="language-text">  ThreadPool 核心組件圖
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                        ThreadPool                               │
+  │                                                                 │
+  │  ┌─────────────────────────────────────────────────────────┐   │
+  │  │  state: AtomicInteger                                   │   │
+  │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │   │
+  │  │  │ RUNNING  │→ │SHUTDOWN  │→ │  STOP    │→ │TERMINATED│ │   │
+  │  │  └──────────┘  └──────────┘  └──────────┘  └────────┘ │   │
+  │  └─────────────────────────────────────────────────────────┘   │
+  │                              │ 控制                             │
+  │  ┌──────────────────┐        │        ┌──────────────────┐     │
+  │  │  task_queue      │        │        │  workers         │     │
+  │  │  BlockingQueue   │◄───────┴───────►│  Set&lt;Thread&gt;     │     │
+  │  │                  │    協作          │                  │     │
+  │  │  [Task][Task]    │  ─poll()─►      │  [W1][W2][W3][W4]│     │
+  │  │  [Task][Task]    │                 │   ↑執行任務↑      │     │
+  │  └──────────────────┘                 └──────────────────┘     │
+  │          ▲ submit()                                             │
+  │          │                   飽和時觸發                          │
+  │  ┌───────┴──────┐        ┌──────────────────────────────┐      │
+  │  │   外部呼叫方  │        │  reject_policy               │      │
+  │  │  (Producer)  │        │  RejectedExecutionHandler    │      │
+  │  └──────────────┘        │  Abort / CallerRuns / Discard│      │
+  │                           └──────────────────────────────┘      │
+  │                                                                 │
+  │  組件職責：                                                      │
+  │  • task_queue：緩衝待執行任務，解耦生產者與消費者               │
+  │  • workers：實際執行任務的執行緒集合，數量在 [core, max] 間調整 │
+  │  • state：協調關閉流程，防止競態                                 │
+  │  • reject_policy：佇列+執行緒都滿時的降級策略                   │
+  └─────────────────────────────────────────────────────────────────┘
 </code></pre>
 <p>需要的核心欄位：</p>
 <ul>
@@ -233,48 +224,42 @@
 <h2 id="152-worker-邏輯"><a class="header" href="#152-worker-邏輯">15.2 Worker 邏輯</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["Worker 主循環流程圖"]
-  N2["Worker 執行緒啟動"]
-  N3["loop（主循環）"]
-  N4["task = queue.poll(keepAliveTime)"]
-  N5["（等待最多 keepAliveTime 超時）"]
-  N6["task != null?"]
-  N7["是 否（等待超時）"]
-  N8["是否為核心執行緒？"]
-  N9["execute()"]
-  N10["task 是 否（非核心）"]
-  N11["繼續等待， workers.size &amp;gt; core?"]
-  N12["不退出"]
-  N13["是 否"]
-  N14["繼續等待"]
-  N15["退出 loop 不退出"]
-  N16["workers."]
-  N17["remove(this)"]
-  N18["shutdown?"]
-  N19["pool.state == SHUTDOWN"]
-  N20["且 queue 已空 退出"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N5 --&gt; N6
-  N5 --&gt; N7
-  N0 --&gt; N8
-  N0 --&gt; N9
-  N0 --&gt; N10
-  N10 --&gt; N11
-  N10 --&gt; N12
-  N10 --&gt; N13
-  N10 --&gt; N14
-  N10 --&gt; N15
-  N10 --&gt; N16
-  N10 --&gt; N17
-  N10 --&gt; N18
-  N18 --&gt; N19
-  N18 --&gt; N20
+<pre><code class="language-text">  Worker 主循環流程圖
+
+  Worker 執行緒啟動
+        │
+        ▼
+  ┌─────────────────────┐
+  │  loop（主循環）      │ ◄────────────────────────────┐
+  └──────────┬──────────┘                               │
+             │                                          │
+             ▼                                          │
+  ┌─────────────────────────────────────┐               │
+  │  task = queue.poll(keepAliveTime)   │               │
+  │  （等待最多 keepAliveTime 超時）     │               │
+  └──────────────┬──────────────────────┘               │
+                 │                                       │
+        task != null?                                    │
+        ┌────────┴────────┐                             │
+        │是               │否（等待超時）                │
+        ▼                 ▼                             │
+  ┌───────────┐   是否為核心執行緒？                     │
+  │ execute() │   ┌────────┴────────┐                   │
+  │  task     │   │是               │否（非核心）         │
+  └─────┬─────┘   ▼                 ▼                   │
+        │   繼續等待，        workers.size &gt; core?        │
+        │   不退出            ┌────────┴────────┐        │
+        │                    │是               │否       │
+        │                    ▼                 ▼         │
+        │             ┌─────────────┐    繼續等待        │
+        │             │ 退出 loop   │    不退出 ─────────►│
+        │             │ workers.    │
+        │             │ remove(this)│
+        └─────────────►            │ ←──────────── shutdown?
+                      └─────────────┘                   ▲
+                                                        │
+                               pool.state == SHUTDOWN  ─┘
+                               且 queue 已空 → 退出
 </code></pre>
 <p>worker 持續從佇列取任務執行，遇到關閉訊號退出。</p>
 <p>Worker 的關鍵設計點：</p>
@@ -286,44 +271,46 @@
 <h2 id="153-提交與關閉對應-15311536"><a class="header" href="#153-提交與關閉對應-15311536">15.3 提交與關閉（對應 15.3.1~15.3.6）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["submit(task) 流程圖"]
-  N2["submit(task)"]
-  N3["state == RUNNING ?"]
-  N4["是 否（SHUTDOWN/STOP）"]
-  N5["queue.offer reject(task)"]
-  N6["(task) 成功? RejectedExecution"]
-  N7["是 否（佇列滿）"]
-  N8["返回 workers.size &amp;lt; maxPoolSize?"]
-  N9["是 否"]
-  N10["新建 Worker reject(task)"]
-  N11["執行此任務 （飽和拒絕）"]
-  N12["shutdown() 流程圖"]
-  N13["shutdown()"]
-  N14["1. 原子設定 state = SHUTDOWN"]
-  N15["2. 中斷所有閒置 workers（喚醒正在 poll() 等待的執行緒）"]
-  N16["3. 不再接受新的 submit()"]
-  N17["4. 等待佇列排空 + workers 歸零 轉入 TERMINATED"]
-  N18["（可用 awaitTermination() 阻塞等待）"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N3 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N6 --&gt; N7
-  N0 --&gt; N8
-  N8 --&gt; N9
-  N8 --&gt; N10
-  N8 --&gt; N11
-  N0 --&gt; N12
-  N0 --&gt; N13
-  N13 --&gt; N14
-  N13 --&gt; N15
-  N13 --&gt; N16
-  N13 --&gt; N17
-  N17 --&gt; N18
+<pre><code class="language-text">  submit(task) 流程圖
+
+  submit(task)
+       │
+       ▼
+  ┌──────────────────────────┐
+  │ state == RUNNING ?        │
+  └──────────┬───────────────┘
+       是 │           │ 否（SHUTDOWN/STOP）
+          ▼           ▼
+  ┌──────────────┐  ┌─────────────────────┐
+  │ queue.offer  │  │ reject(task)        │
+  │ (task) 成功? │  │ RejectedExecution   │
+  └──────┬───────┘  └─────────────────────┘
+    是 │     │ 否（佇列滿）
+       ▼     ▼
+  ┌──────┐  ┌────────────────────────────┐
+  │ 返回 │  │ workers.size &lt; maxPoolSize? │
+  └──────┘  └────────────┬───────────────┘
+                  是 │           │ 否
+                     ▼           ▼
+             ┌──────────────┐  ┌─────────────────────┐
+             │ 新建 Worker  │  │ reject(task)        │
+             │ 執行此任務   │  │（飽和拒絕）          │
+             └──────────────┘  └─────────────────────┘
+
+  ─────────────────────────────────────────────────────────────────
+
+  shutdown() 流程圖
+
+  shutdown()
+       │
+       ├─► 1. 原子設定 state = SHUTDOWN
+       │
+       ├─► 2. 中斷所有閒置 workers（喚醒正在 poll() 等待的執行緒）
+       │
+       ├─► 3. 不再接受新的 submit()
+       │
+       └─► 4. 等待佇列排空 + workers 歸零 → 轉入 TERMINATED
+            （可用 awaitTermination() 阻塞等待）
 </code></pre>
 <ul>
 <li><strong>submit</strong>：放入佇列或觸發拒絕</li>
@@ -333,58 +320,41 @@
 <h2 id="154-測試"><a class="header" href="#154-測試">15.4 測試</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["測試場景清單與期望行為"]
-  N2["場景 1: 正常提交"]
-  N3["操作: 提交 N 個任務（N ≤ queue capacity）"]
-  N4["期望: 所有任務按完成，無例外，result 集合 size == N"]
-  N5["場景 2: 飽和拒絕"]
-  N6["操作: workers 全忙 + 佇列滿時繼續提交"]
-  N7["期望: 觸發 RejectedExecutionException（或自定義策略動作）"]
-  N8["驗證: 已進入佇列的任務仍能正常完成"]
-  N9["場景 3: 優雅關閉（shutdown）"]
-  N10["操作: 提交 N 個任務後立即 shutdown()"]
-  N11["期望: 所有已提交任務執行完畢，awaitTermination 返回 true"]
-  N12["禁止: shutdown 後再 submit 拋出 RejectedExecutionException"]
-  N13["場景 4: 強制中斷（shutdownNow）"]
-  N14["操作: 任務執行中呼叫 shutdownNow()"]
-  N15["期望: 返回未執行任務列表，正在執行的任務收到中斷訊號"]
-  N16["驗證: list.size == 未執行任務數量"]
-  N17["場景 5: keepAlive 縮容"]
-  N18["操作: 高峰期超過 coreSize，低峰期閒置超過 keepAliveTime"]
-  N19["期望: 非核心執行緒自動退出，workers.size 降回 coreSize"]
-  N20["驗證: 等待 keepAliveTime + buffer 後檢查 activeCount"]
-  N21["壓測指標"]
-  N22["吞吐量 tasks/second，對比序列執行的加速比"]
-  N23["延遲 P99 第 99 百分位任務完成時間，反映長尾效能"]
-  N24["拒絕比例 rejected / total，評估參數設定是否合理"]
-  N25["佇列水位 queue.size() 峰值，評估是否需要擴容"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N0 --&gt; N7
-  N0 --&gt; N8
-  N0 --&gt; N9
-  N0 --&gt; N10
-  N0 --&gt; N11
-  N0 --&gt; N12
-  N0 --&gt; N13
-  N0 --&gt; N14
-  N0 --&gt; N15
-  N0 --&gt; N16
-  N0 --&gt; N17
-  N0 --&gt; N18
-  N0 --&gt; N19
-  N0 --&gt; N20
-  N0 --&gt; N21
-  N0 --&gt; N22
-  N0 --&gt; N23
-  N0 --&gt; N24
-  N0 --&gt; N25
+<pre><code class="language-text">  測試場景清單與期望行為
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  場景 1：正常提交                                                │
+  │  操作：提交 N 個任務（N ≤ queue capacity）                      │
+  │  期望：所有任務按完成，無例外，result 集合 size == N             │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  場景 2：飽和拒絕                                                │
+  │  操作：workers 全忙 + 佇列滿時繼續提交                          │
+  │  期望：觸發 RejectedExecutionException（或自定義策略動作）       │
+  │  驗證：已進入佇列的任務仍能正常完成                              │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  場景 3：優雅關閉（shutdown）                                    │
+  │  操作：提交 N 個任務後立即 shutdown()                           │
+  │  期望：所有已提交任務執行完畢，awaitTermination 返回 true       │
+  │  禁止：shutdown 後再 submit 拋出 RejectedExecutionException     │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  場景 4：強制中斷（shutdownNow）                                 │
+  │  操作：任務執行中呼叫 shutdownNow()                             │
+  │  期望：返回未執行任務列表，正在執行的任務收到中斷訊號           │
+  │  驗證：list.size == 未執行任務數量                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  場景 5：keepAlive 縮容                                          │
+  │  操作：高峰期超過 coreSize，低峰期閒置超過 keepAliveTime        │
+  │  期望：非核心執行緒自動退出，workers.size 降回 coreSize         │
+  │  驗證：等待 keepAliveTime + buffer 後檢查 activeCount           │
+  └─────────────────────────────────────────────────────────────────┘
+
+  壓測指標：
+  ┌─────────────┬──────────────────────────────────────────────────┐
+  │  吞吐量     │ tasks/second，對比序列執行的加速比               │
+  │  延遲 P99   │ 第 99 百分位任務完成時間，反映長尾效能           │
+  │  拒絕比例   │ rejected / total，評估參數設定是否合理           │
+  │  佇列水位   │ queue.size() 峰值，評估是否需要擴容              │
+  └─────────────┴──────────────────────────────────────────────────┘
 </code></pre>
 <p>壓測觀察吞吐、延遲、拒絕比例。</p>
 <p>測試線程池時需涵蓋正常路徑和各種邊界情況。特別注意關閉時的競態：<code>shutdown()</code> 和最後一個任務完成之間存在時間視窗，測試需等待 <code>awaitTermination()</code> 返回 <code>true</code> 才能斷言結果。</p>
@@ -847,7 +817,6 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/beautiful-mermaid.js"></script>
 
 
 

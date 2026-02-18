@@ -29,7 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/beautiful-mermaid.css">
+        <link rel="stylesheet" href="theme/ascii-diagram.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -180,132 +180,103 @@
 <h2 id="121123-縮小鎖粒度"><a class="header" href="#121123-縮小鎖粒度">12.1~12.3 縮小鎖粒度</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["縮小鎖粒度: 粗鎖 vs 細鎖"]
-  N2["║ BEFORE: 一把大鎖保護整個 Map ║"]
-  N3["Thread A (讀 k1)"]
-  N4["Thread B (寫 k7) 爭搶同一把 GlobalLock Map"]
-  N5["Thread C (讀 k3)"]
-  N6["Thread D (寫 k9)"]
-  N7["衝突概率 = P(任意兩個操作重疊) ≈ 很高"]
-  N8["同一時刻只有 1 個執行緒能進入 Map"]
-  N9["║ AFTER: 每個 bucket 一把鎖 ║"]
-  N10["Thread A (讀 k1) Lock[bucket_0] bucket[0]: {k1,k2,...}"]
-  N11["Thread B (寫 k7) Lock[bucket_1] bucket[1]: {k7,k8,...}"]
-  N12["Thread C (讀 k3) Lock[bucket_0] bucket[0]: {k3,...}"]
-  N13["Thread D (寫 k9) Lock[bucket_2] bucket[2]: {k9,...}"]
-  N14["A 和 C 競爭 bucket_0（才衝突）"]
-  N15["B 和 D 各用不同 bucket（完全並行）"]
-  N16["衝突概率 = P(兩操作落在同一 bucket) ≈ 1/N（N 為 bucket 數）"]
-  N17["並發度從 1 提升到接近 bucket 數量"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N0 --&gt; N7
-  N0 --&gt; N8
-  N0 --&gt; N9
-  N0 --&gt; N10
-  N0 --&gt; N11
-  N0 --&gt; N12
-  N0 --&gt; N13
-  N0 --&gt; N14
-  N0 --&gt; N15
-  N0 --&gt; N16
-  N0 --&gt; N17
+<pre><code class="language-text">  縮小鎖粒度：粗鎖 vs 細鎖
+
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  BEFORE：一把大鎖保護整個 Map                                ║
+  ╚══════════════════════════════════════════════════════════════╝
+
+  Thread A (讀 k1)  ──┐
+  Thread B (寫 k7)  ──┤──► 爭搶同一把 GlobalLock ──► Map
+  Thread C (讀 k3)  ──┤
+  Thread D (寫 k9)  ──┘
+         │
+         ▼
+  衝突概率 = P(任意兩個操作重疊) ≈ 很高
+  同一時刻只有 1 個執行緒能進入 Map
+
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  AFTER：每個 bucket 一把鎖                                   ║
+  ╚══════════════════════════════════════════════════════════════╝
+
+  Thread A (讀 k1) ──► Lock[bucket_0] ──► bucket[0]: {k1,k2,...}
+  Thread B (寫 k7) ──► Lock[bucket_1] ──► bucket[1]: {k7,k8,...}
+  Thread C (讀 k3) ──► Lock[bucket_0] ──► bucket[0]: {k3,...}
+  Thread D (寫 k9) ──► Lock[bucket_2] ──► bucket[2]: {k9,...}
+         │
+         ▼
+  A 和 C 競爭 bucket_0（才衝突）
+  B 和 D 各用不同 bucket（完全並行）
+
+  衝突概率 = P(兩操作落在同一 bucket) ≈ 1/N（N 為 bucket 數）
+  並發度從 1 提升到接近 bucket 數量
 </code></pre>
 <p>粗鎖改細鎖，減少不必要互斥。</p>
 <p>鎖粒度（Lock Granularity）指的是一把鎖所保護的資料範圍。粗粒度鎖（如保護整個 Map）易於實作但並發度低；細粒度鎖（如每個 bucket 一把鎖）提升並發，但設計複雜度也上升。核心原則：<strong>只鎖真正需要保護的最小資料範圍</strong>。</p>
 <h2 id="124126-分段與分離"><a class="header" href="#124126-分段與分離">12.4~12.6 分段與分離</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["分段鎖（Sharded Lock）: key hash % 16 shard[i]"]
-  N2["Sharded Map（16 個分片）"]
-  N3["key hash(key) % 16 選擇分片"]
-  N4["Shard[0] Lock[0] Thread A"]
-  N5["{k0,...}"]
-  N6["Shard[1] Lock[1] Thread B (同時並行)"]
-  N7["{k1,...}"]
-  N8["Shard[2] Lock[2] Thread C (同時並行)"]
-  N9["{k2,...}"]
-  N10["Shard[15] Lock[15] Thread P (同時並行)"]
-  N11["{k15,..}"]
-  N12["並發度: 最多 16 個執行緒同時操作不同分片（互不阻塞）"]
-  N13["衝突只發生在: 兩個 key 的 hash%16 值相同時"]
-  N14["對比單一全域鎖: 並發度提升 ≈ 16 倍（理論上限）"]
-  N15["白話例子"]
-  N16["超商單一結帳櫃台 16 個自助結帳機"]
-  N17["顧客分散到不同機台，排隊時間大幅縮短"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N0 --&gt; N7
-  N0 --&gt; N8
-  N0 --&gt; N9
-  N0 --&gt; N10
-  N0 --&gt; N11
-  N0 --&gt; N12
-  N0 --&gt; N13
-  N0 --&gt; N14
-  N0 --&gt; N15
-  N0 --&gt; N16
-  N0 --&gt; N17
+<pre><code class="language-text">  分段鎖（Sharded Lock）：key hash % 16 → shard[i]
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                    Sharded Map（16 個分片）                  │
+  ├─────────────────────────────────────────────────────────────┤
+  │                                                             │
+  │  key ──► hash(key) % 16 ──► 選擇分片                       │
+  │                                                             │
+  │   Shard[0]  ┌──────────┐  Lock[0]  ← Thread A              │
+  │             │ {k0,...} │                                    │
+  │   Shard[1]  ├──────────┤  Lock[1]  ← Thread B (同時並行)   │
+  │             │ {k1,...} │                                    │
+  │   Shard[2]  ├──────────┤  Lock[2]  ← Thread C (同時並行)   │
+  │             │ {k2,...} │                                    │
+  │      ⋮      │    ⋮     │    ⋮                              │
+  │   Shard[15] ├──────────┤  Lock[15] ← Thread P (同時並行)   │
+  │             │ {k15,..} │                                    │
+  │             └──────────┘                                    │
+  │                                                             │
+  │  並發度：最多 16 個執行緒同時操作不同分片（互不阻塞）         │
+  │  衝突只發生在：兩個 key 的 hash%16 值相同時                  │
+  │                                                             │
+  │  對比單一全域鎖：並發度提升 ≈ 16 倍（理論上限）              │
+  └─────────────────────────────────────────────────────────────┘
+
+  白話例子：
+  超商單一結帳櫃台 → 16 個自助結帳機
+  顧客分散到不同機台，排隊時間大幅縮短
 </code></pre>
 <p>把一把全域鎖拆成多段（striped/sharded lock）。</p>
 <p>分段鎖是縮小鎖粒度的極致應用：將資料結構按某種規則（通常是 key 的 hash 值）切分為多個 shard，每個 shard 有獨立的鎖。操作時只鎖對應的 shard，其他 shard 的操作完全不受影響，理論並發度為 shard 數量。</p>
 <h2 id="127129-其他策略"><a class="header" href="#127129-其他策略">12.7~12.9 其他策略</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["鎖策略決策樹"]
-  N2["開始評估並發策略"]
-  N3["讀操作遠多於寫操作？"]
-  N4["是 使用讀寫鎖（RWLock / shared_mutex）"]
-  N5["多個讀者同時進入，只有寫者互斥"]
-  N6["適用: 配置讀取、快取查詢"]
-  N7["否 操作是否無衝突（CAS 能完成）？"]
-  N8["是 樂觀鎖 / 原子 CAS（lock-free）"]
-  N9["適用: 計數器、狀態機、無競爭更新"]
-  N10["否 高吞吐量場景？"]
-  N11["是 分段鎖（Sharded Lock）"]
-  N12["適用: 並發 Map、並發計數器"]
-  N13["否 需要公平性（FIFO 順序）？"]
-  N14["是 公平鎖（Fair Lock）"]
-  N15["避免飢餓，代價: 吞吐略低"]
-  N16["否 執行緒本地資料夠用？"]
-  N17["是 ThreadLocal"]
-  N18["完全消除鎖競爭"]
-  N19["否 普通互斥鎖"]
-  N20["+ 縮小持鎖範圍"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N0 --&gt; N7
-  N7 --&gt; N8
-  N7 --&gt; N9
-  N7 --&gt; N10
-  N10 --&gt; N11
-  N10 --&gt; N12
-  N10 --&gt; N13
-  N13 --&gt; N14
-  N13 --&gt; N15
-  N13 --&gt; N16
-  N16 --&gt; N17
-  N16 --&gt; N18
-  N16 --&gt; N19
-  N19 --&gt; N20
+<pre><code class="language-text">  鎖策略決策樹
+
+  開始評估並發策略
+         │
+         ▼
+  讀操作遠多於寫操作？
+  ├── 是 ──► 使用讀寫鎖（RWLock / shared_mutex）
+  │          多個讀者同時進入，只有寫者互斥
+  │          適用：配置讀取、快取查詢
+  │
+  └── 否 ──► 操作是否無衝突（CAS 能完成）？
+             ├── 是 ──► 樂觀鎖 / 原子 CAS（lock-free）
+             │          適用：計數器、狀態機、無競爭更新
+             │
+             └── 否 ──► 高吞吐量場景？
+                        ├── 是 ──► 分段鎖（Sharded Lock）
+                        │          適用：並發 Map、並發計數器
+                        │
+                        └── 否 ──► 需要公平性（FIFO 順序）？
+                                   ├── 是 ──► 公平鎖（Fair Lock）
+                                   │          避免飢餓，代價：吞吐略低
+                                   │
+                                   └── 否 ──► 執行緒本地資料夠用？
+                                              ├── 是 ──► ThreadLocal
+                                              │          完全消除鎖競爭
+                                              └── 否 ──► 普通互斥鎖
+                                                         + 縮小持鎖範圍
 </code></pre>
 <p>其他常見鎖優化策略：</p>
 <ul>
@@ -629,7 +600,6 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/beautiful-mermaid.js"></script>
 
 
 

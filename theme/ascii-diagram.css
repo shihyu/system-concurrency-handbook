@@ -1,0 +1,15 @@
+pre > code.language-text {
+  white-space: pre !important;
+  word-break: normal;
+  overflow-wrap: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+  font-feature-settings: "liga" 0, "calt" 0;
+  font-family: "Sarasa Mono TC", "Noto Sans Mono CJK TC", "Noto Sans Mono CJK SC",
+    "Cascadia Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", monospace;
+}
+
+pre {
+  overflow-x: auto;
+}

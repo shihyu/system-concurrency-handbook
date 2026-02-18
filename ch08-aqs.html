@@ -29,7 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/beautiful-mermaid.css">
+        <link rel="stylesheet" href="theme/ascii-diagram.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -180,129 +180,112 @@
 <h2 id="81-aqs-核心對應-811812"><a class="header" href="#81-aqs-核心對應-811812">8.1 AQS 核心（對應 8.1.1~8.1.2）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["AQS（AbstractQueuedSynchronizer）核心結構"]
-  N2["AQS 由兩個核心元件組成"]
-  N3["AQS 物件"]
-  N4["state: int = 0 核心同步狀態（CAS 競爭）"]
-  N5["head: Node*"]
-  N6["tail: Node*"]
-  N7["CLH 雙向等待佇列"]
-  N8["head Node(T2) Node(T3)"]
-  N9["(dummy) waitStatus waitStatus"]
-  N10["Node = SIGNAL = SIGNAL"]
-  N11["thread=T2 thread=T3"]
-  N12["tail 最後入隊"]
-  N13["獨占模式 acquire 流程（以 ReentrantLock.lock 為例）"]
-  N14["Thread 呼叫 acquire(1)"]
-  N15["tryAcquire() 成功（CAS state: 0 1） 持有鎖"]
-  N16["失敗（state != 0，鎖被佔用）"]
-  N17["addWaiter(EXCLUSIVE)"]
-  N18["建立 Node(thread=自己)，CAS 加入佇列尾部"]
-  N19["acquireQueued()"]
-  N20["for(;;) {"]
-  N21["若前驅是 head 再嘗試 tryAcquire()"]
-  N22["若成功 自己成為新 head，退出迴圈"]
-  N23["若失敗 前驅設為 SIGNAL"]
-  N24["LockSupport.park()（掛起執行緒）"]
-  N25["等待 unpark() 喚醒後繼續迴圈"]
-  N26["release(1) 時"]
-  N27["tryRelease() state 0 unpark(head.next.thread)"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N0 --&gt; N7
-  N0 --&gt; N8
-  N0 --&gt; N9
-  N0 --&gt; N10
-  N0 --&gt; N11
-  N11 --&gt; N12
-  N0 --&gt; N13
-  N0 --&gt; N14
-  N0 --&gt; N15
-  N0 --&gt; N16
-  N0 --&gt; N17
-  N0 --&gt; N18
-  N0 --&gt; N19
-  N0 --&gt; N20
-  N0 --&gt; N21
-  N0 --&gt; N22
-  N0 --&gt; N23
-  N0 --&gt; N24
-  N0 --&gt; N25
-  N0 --&gt; N26
-  N0 --&gt; N27
+<pre><code class="language-text">  AQS（AbstractQueuedSynchronizer）核心結構
+  ════════════════════════════════════════════════════════
+
+  AQS 由兩個核心元件組成：
+
+  ┌─────────────────────────────────────────────────────┐
+  │                    AQS 物件                         │
+  │                                                     │
+  │  state: int = 0   ← 核心同步狀態（CAS 競爭）        │
+  │  head: Node*  ──────────────────────────────────┐   │
+  │  tail: Node*  ──────────────────────────────────┼─┐ │
+  └──────────────────────────────────────────────────┼─┼─┘
+                                                     │ │
+  CLH 雙向等待佇列：                                  │ │
+  ┌──────────┐    ┌──────────────┐    ┌──────────────┐ │
+  │  head    │    │   Node(T2)   │    │   Node(T3)   │ │
+  │ (dummy)  │◄──►│  waitStatus  │◄──►│  waitStatus  │◄┘
+  │  Node    │    │  = SIGNAL    │    │  = SIGNAL    │
+  │          │    │  thread=T2   │    │  thread=T3   │
+  └──────────┘    └──────────────┘    └──────┬───────┘
+                                              │
+                                           tail ◄── 最後入隊
+
+  獨占模式 acquire 流程（以 ReentrantLock.lock 為例）：
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  Thread 呼叫 acquire(1)                             │
+  │       │                                             │
+  │       ▼                                             │
+  │  tryAcquire()  ─── 成功（CAS state: 0→1）──► 持有鎖 │
+  │       │                                             │
+  │       │ 失敗（state != 0，鎖被佔用）                │
+  │       ▼                                             │
+  │  addWaiter(EXCLUSIVE)                               │
+  │  建立 Node(thread=自己)，CAS 加入佇列尾部           │
+  │       │                                             │
+  │       ▼                                             │
+  │  acquireQueued()                                    │
+  │  ┌───────────────────────────────────────────┐      │
+  │  │  for(;;) {                                │      │
+  │  │    若前驅是 head → 再嘗試 tryAcquire()    │      │
+  │  │    若成功 → 自己成為新 head，退出迴圈     │      │
+  │  │    若失敗 → 前驅設為 SIGNAL               │      │
+  │  │    LockSupport.park()（掛起執行緒）       │      │
+  │  │    等待 unpark() 喚醒後繼續迴圈           │      │
+  │  │  }                                        │      │
+  │  └───────────────────────────────────────────┘      │
+  │       │                                             │
+  │  release(1) 時：                                    │
+  │  tryRelease() → state 0 → unpark(head.next.thread) │
+  └─────────────────────────────────────────────────────┘
 </code></pre>
 <p>AQS = <code>state</code>（整數狀態）+ FIFO 等待佇列。</p>
 <h2 id="82-獨占與共享對應-821824"><a class="header" href="#82-獨占與共享對應-821824">8.2 獨占與共享（對應 8.2.1~8.2.4）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-mermaid">flowchart TD
-  N0["本小節示意圖"]
-  N1["獨占模式 vs 共享模式對比"]
-  N2["獨占模式（Exclusive）— ReentrantLock"]
-  N3["state: 0 1（被獲取） 0（釋放）"]
-  N4["時間軸"]
-  N5["T1 獲取 T1 釋放"]
-  N6["T2 等待 ░░░░░░░░░░░░░░░░░░░░ T2 獲取"]
-  N7["T3 等待 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ T3 獲取"]
-  N8["state 只有 0 和 1，一次只有一個執行緒在臨界區"]
-  N9["tryAcquire: CAS(state, 0, 1) 成功才獲取"]
-  N10["tryRelease: state = 0，unpark 下一個等待者"]
-  N11["共享模式（Shared）— Semaphore(permits=2)"]
-  N12["state: 2（可用名額） 1 0（滿） 1 2"]
-  N13["時間軸"]
-  N14["T1 獲取(state:2 1) T1 釋放( 2)"]
-  N15["T2 獲取(state:1 0) T2 釋放( 1)"]
-  N16["T3 等待(state=0) ░░░░░░░░░░░░░░░░ T3 獲取(1 0)"]
-  N17["T4 等待(state=0) ░░░░░░░░░░░░░░░░ T4 等待..."]
-  N18["tryAcquireShared: state &amp;gt; 0 CAS(state, s, s-1)"]
-  N19["tryReleaseShared: CAS(state, s, s+1)"]
-  N20["setHeadAndPropagate: 獲取成功後"]
-  N21["如果還有名額（state &amp;gt; 0），傳播喚醒後續等待者"]
-  N22["T2 獲取成功後"]
-  N23["state = 1 &amp;gt; 0 unpark(T3) 傳播"]
-  N24["獨占 vs 共享 API 對比"]
-  N25["獨占（Exclusive） 共享（Shared）"]
-  N26["tryAcquire(arg) tryAcquireShared(arg)"]
-  N27["tryRelease(arg) tryReleaseShared(arg)"]
-  N28["acquire(arg) acquireShared(arg)"]
-  N29["release(arg) releaseShared(arg)"]
-  N30["ReentrantLock Semaphore, ReadLock"]
-  N0 --&gt; N1
-  N0 --&gt; N2
-  N0 --&gt; N3
-  N0 --&gt; N4
-  N0 --&gt; N5
-  N0 --&gt; N6
-  N0 --&gt; N7
-  N0 --&gt; N8
-  N0 --&gt; N9
-  N0 --&gt; N10
-  N0 --&gt; N11
-  N0 --&gt; N12
-  N0 --&gt; N13
-  N0 --&gt; N14
-  N0 --&gt; N15
-  N0 --&gt; N16
-  N0 --&gt; N17
-  N0 --&gt; N18
-  N0 --&gt; N19
-  N0 --&gt; N20
-  N0 --&gt; N21
-  N0 --&gt; N22
-  N0 --&gt; N23
-  N0 --&gt; N24
-  N0 --&gt; N25
-  N0 --&gt; N26
-  N0 --&gt; N27
-  N0 --&gt; N28
-  N0 --&gt; N29
-  N0 --&gt; N30
+<pre><code class="language-text">  獨占模式 vs 共享模式對比
+  ════════════════════════════════════════════════════════
+
+  獨占模式（Exclusive）— ReentrantLock
+  ┌─────────────────────────────────────────────────────┐
+  │  state: 0 → 1（被獲取） → 0（釋放）                │
+  │                                                     │
+  │  時間軸：                                           │
+  │  ─────────────────────────────────────────────►    │
+  │  T1 獲取 ████████████████████ T1 釋放              │
+  │  T2 等待 ░░░░░░░░░░░░░░░░░░░░ T2 獲取 ████████     │
+  │  T3 等待 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ T3 獲取  │
+  │                                                     │
+  │  state 只有 0 和 1，一次只有一個執行緒在臨界區      │
+  │  tryAcquire：CAS(state, 0, 1) 成功才獲取           │
+  │  tryRelease：state = 0，unpark 下一個等待者        │
+  └─────────────────────────────────────────────────────┘
+
+  共享模式（Shared）— Semaphore(permits=2)
+  ┌─────────────────────────────────────────────────────┐
+  │  state: 2（可用名額） → 1 → 0（滿） → 1 → 2        │
+  │                                                     │
+  │  時間軸：                                           │
+  │  ─────────────────────────────────────────────►    │
+  │  T1 獲取(state:2→1)████████████████ T1 釋放(→2)   │
+  │  T2 獲取(state:1→0)████████████████ T2 釋放(→1)   │
+  │  T3 等待(state=0) ░░░░░░░░░░░░░░░░ T3 獲取(1→0)██ │
+  │  T4 等待(state=0) ░░░░░░░░░░░░░░░░ T4 等待...      │
+  │                                                     │
+  │  tryAcquireShared：state &gt; 0 → CAS(state, s, s-1) │
+  │  tryReleaseShared：CAS(state, s, s+1)              │
+  │                                                     │
+  │  setHeadAndPropagate：獲取成功後                   │
+  │  如果還有名額（state &gt; 0），傳播喚醒後續等待者      │
+  │  ┌────────────────────────────────────────────┐    │
+  │  │  T2 獲取成功後：                           │    │
+  │  │  state = 1 &gt; 0 → unpark(T3) 傳播           │    │
+  │  └────────────────────────────────────────────┘    │
+  └─────────────────────────────────────────────────────┘
+
+  獨占 vs 共享 API 對比：
+  ┌────────────────────────┬────────────────────────────┐
+  │ 獨占（Exclusive）      │ 共享（Shared）              │
+  ├────────────────────────┼────────────────────────────┤
+  │ tryAcquire(arg)        │ tryAcquireShared(arg)       │
+  │ tryRelease(arg)        │ tryReleaseShared(arg)       │
+  │ acquire(arg)           │ acquireShared(arg)          │
+  │ release(arg)           │ releaseShared(arg)          │
+  │ ReentrantLock          │ Semaphore, ReadLock         │
+  └────────────────────────┴────────────────────────────┘
 </code></pre>
 <ul>
 <li>獨占：一次一個（ReentrantLock）</li>
@@ -544,7 +527,6 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/beautiful-mermaid.js"></script>
 
 
 
