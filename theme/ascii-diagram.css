@@ -15,7 +15,7 @@ pre {
 }
 
 :root {
-  --ascii-svg-font: "JetBrains Mono", "JetBrainsMono Nerd Font", "Sarasa Mono TC",
+  --ascii-svg-font: "Sarasa Mono TC", "JetBrains Mono", "JetBrainsMono Nerd Font",
     "Cascadia Mono", "Iosevka", "Noto Sans Mono CJK TC", "Noto Sans Mono CJK SC",
     "Noto Sans Mono CJK JP", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", monospace;
@@ -35,9 +35,11 @@ pre {
 
 .ascii-svg .ascii-text {
   font-family: var(--ascii-svg-font);
-  font-weight: 500;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
 }
 
 .ascii-svg .ascii-lines {
+  shape-rendering: geometricPrecision;
   stroke-linejoin: miter;
 }
