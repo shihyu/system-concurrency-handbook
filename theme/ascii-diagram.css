@@ -37,9 +37,11 @@ pre {
   font-family: var(--ascii-svg-font);
   font-weight: 400;
   text-rendering: optimizeLegibility;
+  opacity: 0.92;
 }
 
 .ascii-svg .ascii-lines {
   shape-rendering: geometricPrecision;
   stroke-linejoin: miter;
+  opacity: 0.78;
 }
