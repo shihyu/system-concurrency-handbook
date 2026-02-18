@@ -21,4 +21,4 @@
 - [第18章 AQS 可重入鎖實戰](./ch18-aqs-reentrant-practice.md)
 - [第19章 分散式鎖架構](./ch19-distributed-lock.md)
 - [第20章 秒殺系統架構](./ch20-seckill-architecture.md)
-- [附錄：Java/C++/Rust/Go 對照速查](./appendix-language-map.md)
+- [附錄：C/C++/Rust/Go/Python 對照速查](./appendix-language-map.md)

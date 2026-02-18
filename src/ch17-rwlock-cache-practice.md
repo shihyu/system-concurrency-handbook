@@ -3,7 +3,7 @@
 ## 17.1 場景
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 讀寫比例與並發度對比
@@ -52,7 +52,7 @@
 ## 17.2 基本模式
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 Cache 查找完整流程（含雙重檢查）
@@ -126,7 +126,7 @@ Cache 查找完整流程（含雙重檢查）
 ## 17.3 結構設計（對應 17.3.1~17.3.2）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 Cache 結構設計與 RWMutex 保護範圍
@@ -178,7 +178,7 @@ Cache 結構設計與 RWMutex 保護範圍
 ## 17.4 常見坑
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 坑一：鎖升級死鎖

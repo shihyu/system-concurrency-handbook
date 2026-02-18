@@ -3,7 +3,7 @@
 ## 14.1~14.3 存取機制（對應 14.1~14.3.4）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   ThreadLocal 存取機制：Thread 內部結構圖
@@ -59,7 +59,7 @@ ThreadLocal 的核心不是「一個全局變數有多份副本」，而是「�
 ## 14.4 不繼承性
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   父執行緒 vs 子執行緒的 ThreadLocal 隔離
@@ -94,7 +94,7 @@ ThreadLocal 的核心不是「一個全局變數有多份副本」，而是「�
 ## 14.5~14.6 可繼承變體
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   InheritableThreadLocal：建立子執行緒時複製快照

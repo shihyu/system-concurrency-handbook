@@ -3,7 +3,7 @@
 ## 7.1 語法層（對應 7.1.1~7.1.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   synchronized 三種語法形式與 bytecode 對應
@@ -70,7 +70,7 @@
 ## 7.2~7.3 物件頭與鎖標記（對應 7.2.1~7.3.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   64-bit JVM 物件頭（Mark Word）布局
@@ -128,7 +128,7 @@
 ## 7.4~7.5 Monitor 與 bytecode（對應 7.4.1~7.5.4）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   ObjectMonitor 結構與 monitorenter/exit 流程
@@ -191,7 +191,7 @@
 ## 7.6~7.10 鎖升級與優化（對應 7.6~7.10）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   JVM 鎖升級路徑（只能升級，不可降級）

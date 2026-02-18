@@ -3,7 +3,7 @@
 ## 10.1 CAS 基本模型
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   CAS（Compare-And-Swap）基本模型
@@ -62,7 +62,7 @@ Compare-And-Swap：比較並交換。
 ## 10.2 底層支持（對應 10.2.1~10.2.2）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   Intel x86 LOCK CMPXCHG vs ARM LL/SC
@@ -135,7 +135,7 @@ Compare-And-Swap：比較並交換。
 ## 10.3 CAS 實作計數器（對應 10.3.1~10.3.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   CAS 自旋計數器流程
@@ -188,7 +188,7 @@ do {
 ## 10.4 ABA 問題（對應 10.4.1~10.4.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   ABA 問題時間軸與帶版本號解法

@@ -3,7 +3,7 @@
 ## 8.1 AQS 核心（對應 8.1.1~8.1.2）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   AQS（AbstractQueuedSynchronizer）核心結構
@@ -64,7 +64,7 @@ AQS = `state`（整數狀態）+ FIFO 等待佇列。
 ## 8.2 獨占與共享（對應 8.2.1~8.2.4）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   獨占模式 vs 共享模式對比

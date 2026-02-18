@@ -3,7 +3,7 @@
 ## 6.1 多級快取（對應 6.1.1~6.1.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   多核 CPU 多級快取延遲金字塔
@@ -69,7 +69,7 @@ L1/L2/L3 讓 CPU 讀寫更快，但也帶來多副本一致性問題。
 ## 6.2 快取一致性（對應 6.2.1~6.2.5）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   MESI 協議四狀態轉換圖
@@ -132,7 +132,7 @@ MESI 等協議保證核心間最終一致。
 ## 6.3 偽共享（對應 6.3.1~6.3.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   偽共享（False Sharing）問題示意
@@ -186,7 +186,7 @@ MESI 等協議保證核心間最終一致。
 ## 6.4 volatile 類語義（對應 6.4.1~6.4.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   volatile 可見性語義：寫前 StoreStore + 讀後 LoadLoad
@@ -235,7 +235,7 @@ MESI 等協議保證核心間最終一致。
 ## 6.5 指令重排與屏障（對應 6.5.1~6.5.4）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   四種記憶體屏障（Memory Fence）類型
@@ -298,7 +298,7 @@ Memory Fence 阻止特定方向的重排。
 ## 6.6 記憶體模型（對應 6.6.1~6.6.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   各語言記憶體模型與同步 API 對比
@@ -340,7 +340,7 @@ Java、C++、Rust、Go 都定義了跨執行緒可見性規則。
 ## 6.7 happens-before（對應 6.7.1~6.7.9）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   happens-before（HB）傳遞鏈示意

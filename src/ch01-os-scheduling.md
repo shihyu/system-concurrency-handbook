@@ -3,7 +3,7 @@
 ## 1.1 計算機基礎（對應 1.1.1~1.1.2）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 馮諾伊曼架構：CPU ↔ 記憶體 ↔ I/O
@@ -48,7 +48,7 @@
 ## 1.2 多核與多 CPU（對應 1.2.1~1.2.5）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 單核時間切片（Concurrency，並發但非並行）：
@@ -99,7 +99,7 @@ NUMA 多插槽架構（跨 Socket 成本警示）：
 ## 1.3 線程模型（對應 1.3.1~1.3.3）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 三種線程模型對比：
@@ -156,7 +156,7 @@ NUMA 多插槽架構（跨 Socket 成本警示）：
 ## 1.4 Java 線程與 OS 線程映射
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 Java 線程完整映射鏈：

@@ -3,7 +3,7 @@
 ## 15.1 結構設計
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   ThreadPool 核心組件圖
@@ -51,7 +51,7 @@
 ## 15.2 Worker 邏輯
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   Worker 主循環流程圖
@@ -102,7 +102,7 @@ Worker 的關鍵設計點：
 ## 15.3 提交與關閉（對應 15.3.1~15.3.6）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   submit(task) 流程圖
@@ -155,7 +155,7 @@ Worker 的關鍵設計點：
 ## 15.4 測試
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   測試場景清單與期望行為

@@ -3,7 +3,7 @@
 ## 12.1~12.3 縮小鎖粒度
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   縮小鎖粒度：粗鎖 vs 細鎖
@@ -45,7 +45,7 @@
 ## 12.4~12.6 分段與分離
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   分段鎖（Sharded Lock）：key hash % 16 → shard[i]
@@ -85,7 +85,7 @@
 ## 12.7~12.9 其他策略
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
   鎖策略決策樹

@@ -3,7 +3,7 @@
 ## 19.1 為什麼需要分散式鎖
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 單節點 vs 多節點鎖的邊界
@@ -64,7 +64,7 @@
 ## 19.2 超賣案例（對應 19.2.1~19.2.2）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 read-modify-write 競態導致超賣
@@ -103,7 +103,7 @@ read-modify-write 競態導致超賣
 ## 19.3 JVM 本地鎖邊界（對應 19.3.1~19.3.2）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 JVM 本地鎖的可見範圍邊界
@@ -151,7 +151,7 @@ JVM 本地鎖的可見範圍邊界
 ## 19.4 分散式鎖要求（對應 19.4.1~19.4.2）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 分散式鎖五大需求與實現挑戰
@@ -207,7 +207,7 @@ JVM 本地鎖的可見範圍邊界
 ## 19.5 AP/CP 取捨（對應 19.5.1~19.5.4）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 CAP 定理與分散式鎖選型
@@ -268,7 +268,7 @@ Redis 常偏 AP；ZooKeeper 常偏 CP。
 ## 19.6 Redis 鎖演進（對應 19.6.1~19.6.12）
 
 <!-- subsection-diagram -->
-### 本小節示意圖（ASCII）
+### 本小節示意圖
 
 ```text
 Redis 分散式鎖四代演進
