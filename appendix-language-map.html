@@ -29,7 +29,6 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/flowchart.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -194,14 +193,12 @@
 </div>
 <h2 id="一個跨語言都成立的原則"><a class="header" href="#一個跨語言都成立的原則">一個跨語言都成立的原則</a></h2>
 <p>先保證正確性，再談吞吐。</p>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation: 正確性(資料不錯) → 可用性(不死鎖) → 效能(夠快)
-st-&gt;n1
+<pre><code class="language-text">正確性(資料不錯) -&gt; 可用性(不死鎖) -&gt; 效能(夠快)
 </code></pre>
 <h2 id="共同最小模板"><a class="header" href="#共同最小模板">共同最小模板</a></h2>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation: 1) 先用 atomic 解決單變數競態\n2) 需要複合一致性時改用 lock\n3) 併發量大再加 queue/pool/backpressure
-st-&gt;n1
+<pre><code class="language-text">1) 先用 atomic 解決單變數競態
+2) 需要複合一致性時改用 lock
+3) 併發量大再加 queue/pool/backpressure
 </code></pre>
 <pre><code class="language-c">// C: atomic -&gt; mutex 升級路徑
 #include &lt;stdatomic.h&gt;
@@ -247,13 +244,21 @@ with lock:                        # 安全的複合操作
 </tbody></table>
 </div>
 <h2 id="選型快速決策"><a class="header" href="#選型快速決策">選型快速決策</a></h2>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation: 需要多核 CPU 並行運算？\n  ├─ 是 → C/C++/Rust/Go（Python 用 multiprocessing）\n  └─ 否（I/O 密集）→ 各語言都行，Python asyncio 亦可\n　\n需要極低延遲無 GC？\n  └─ C/C++/Rust
-n2=&gt;operation: 　\n需要記憶體安全無 data race 編譯期保證？\n  └─ Rust\n　\n需要最簡單的並發模型？\n  └─ Go（goroutine + channel）
-n3=&gt;operation: 　\n需要快速腳本/原型？\n  └─ Python（注意 GIL 限制）
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
+<pre><code class="language-text">需要多核 CPU 並行運算？
+  ├─ 是 → C/C++/Rust/Go（Python 用 multiprocessing）
+  └─ 否（I/O 密集）→ 各語言都行，Python asyncio 亦可
+
+需要極低延遲無 GC？
+  └─ C/C++/Rust
+
+需要記憶體安全無 data race 編譯期保證？
+  └─ Rust
+
+需要最簡單的並發模型？
+  └─ Go（goroutine + channel）
+
+需要快速腳本/原型？
+  └─ Python（注意 GIL 限制）
 </code></pre>
 
                     </main>
@@ -296,7 +301,6 @@ n2-&gt;n3
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/flowchart-init.js"></script>
 
 
 

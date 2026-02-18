@@ -29,7 +29,6 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/flowchart.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -180,21 +179,48 @@
 <h2 id="141143-存取機制對應-1411434"><a class="header" href="#141143-存取機制對應-1411434">14.1~14.3 存取機制（對應 14.1~14.3.4）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation:   ThreadLocal 存取機制：Thread 內部結構圖\n　\n  ┌─────────────────────────────────────────────────────────────────────────┐\n  │  Thread A                                                               │\n  │  ┌─────────────────────────────────────────────────────────┐            │\n  │  │  threadLocals: ThreadLocalMap                           │            │
-n2=&gt;operation:   │  │  ┌──────────────────────────────────────────────────┐   │            │\n  │  │  │  Entry[]（開放定址雜湊表）                                │  │             │\n  │  │  │  ┌────────────────────┬───────────────────────┐  │  │             │\n  │  │  │  │ key = WeakRef(TL1) │ value = "user_42"    │  │  │              │\n  │  │  │  ├────────────────────┼───────────────────────┤  │  │             │\n  │  │  │  │ key = WeakRef(TL2) │ value = conn_obj_A   │  │  │              │
-n3=&gt;operation:   │  │  │  ├────────────────────┼───────────────────────┤  │  │             │\n  │  │  │  │      (空槽)          │                       │  │  │             │\n  │  │  │  └────────────────────┴───────────────────────┘  │  │             │\n  │  │  └──────────────────────────────────────────────────┘   │            │\n  │  └─────────────────────────────────────────────────────────┘            │\n  └─────────────────────────────────────────────────────────────────────────┘
-n4=&gt;operation: 　\n  查找路徑：\n  threadLocal.get()\n       │\n       ▼\n  Thread.currentThread()          ← 取得當前執行緒
-n5=&gt;operation:        │\n       ▼\n  thread.threadLocals             ← 取得 ThreadLocalMap\n       │\n       ▼\n  map.get(this)                   ← this = ThreadLocal 實例，作為 key
-n6=&gt;operation:        │\n       ▼\n  entry.value                     ← 返回使用者儲存的值\n　\n  ⚠️  記憶體洩漏風險：\n  ┌─────────────────────────────────────────────────────────────────────────┐
-n7=&gt;operation:   │  ThreadLocal 實例被 GC（key 變 null）                                         │\n  │  → Entry 的 key = null，但 value 仍被強引用                                     │\n  │  → value 無法被 GC 回收 ← 洩漏！                                                │\n  │                                                                         │\n  │  防範：使用完畢後務必呼叫 threadLocal.remove()                                      │\n  └─────────────────────────────────────────────────────────────────────────┘
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
-n3-&gt;n4
-n4-&gt;n5
-n5-&gt;n6
-n6-&gt;n7
+<pre><code class="language-text">  ThreadLocal 存取機制：Thread 內部結構圖
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  Thread A                                                       │
+  │  ┌─────────────────────────────────────────────────────────┐   │
+  │  │  threadLocals: ThreadLocalMap                           │   │
+  │  │  ┌──────────────────────────────────────────────────┐  │   │
+  │  │  │  Entry[]（開放定址雜湊表）                        │  │   │
+  │  │  │  ┌────────────────────┬───────────────────────┐  │  │   │
+  │  │  │  │ key = WeakRef(TL1) │ value = "user_42"    │  │  │   │
+  │  │  │  ├────────────────────┼───────────────────────┤  │  │   │
+  │  │  │  │ key = WeakRef(TL2) │ value = conn_obj_A   │  │  │   │
+  │  │  │  ├────────────────────┼───────────────────────┤  │  │   │
+  │  │  │  │      (空槽)         │                       │  │  │   │
+  │  │  │  └────────────────────┴───────────────────────┘  │  │   │
+  │  │  └──────────────────────────────────────────────────┘  │   │
+  │  └─────────────────────────────────────────────────────────┘   │
+  └─────────────────────────────────────────────────────────────────┘
+
+  查找路徑：
+  threadLocal.get()
+       │
+       ▼
+  Thread.currentThread()          ← 取得當前執行緒
+       │
+       ▼
+  thread.threadLocals             ← 取得 ThreadLocalMap
+       │
+       ▼
+  map.get(this)                   ← this = ThreadLocal 實例，作為 key
+       │
+       ▼
+  entry.value                     ← 返回使用者儲存的值
+
+  ⚠️  記憶體洩漏風險：
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  ThreadLocal 實例被 GC（key 變 null）                           │
+  │  → Entry 的 key = null，但 value 仍被強引用                     │
+  │  → value 無法被 GC 回收 ← 洩漏！                               │
+  │                                                                 │
+  │  防範：使用完畢後務必呼叫 threadLocal.remove()                  │
+  └─────────────────────────────────────────────────────────────────┘
 </code></pre>
 <p>每個執行緒持有自己的本地變數副本，互不干擾。</p>
 <p>ThreadLocal 的核心不是「一個全局變數有多份副本」，而是「每個 Thread 物件內部有一個 <code>ThreadLocalMap</code>」。<code>get()/set()</code> 實際上是在當前執行緒的 Map 中查找/寫入，以 ThreadLocal 實例本身作為 key。</p>
@@ -202,36 +228,75 @@ n6-&gt;n7
 <h2 id="144-不繼承性"><a class="header" href="#144-不繼承性">14.4 不繼承性</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation:   父執行緒 vs 子執行緒的 ThreadLocal 隔離\n　\n  ┌──────────────────────────────────────────────────────────────────┐\n  │  父執行緒（Parent Thread）                                             │\n  │  threadLocals: { TL_user_id → 42, TL_request → "req-001" }       │\n  └────────────────────────────┬─────────────────────────────────────┘
-n2=&gt;operation:                                │ new Thread(...)  或  pool.submit(...)\n                               │ 建立子執行緒\n                               ▼\n  ┌──────────────────────────────────────────────────────────────────┐\n  │  子執行緒（Child Thread）                                              │\n  │  threadLocals: { }   ← 空 Map！                                    │
-n3=&gt;operation:   │                                                                  │\n  │  child.get(TL_user_id)  → null（或 initialValue()）                 │\n  │  child.get(TL_request)  → null（或 initialValue()）                 │\n  └──────────────────────────────────────────────────────────────────┘\n　\n  ⚠️  常見問題：
-n4=&gt;operation:   父執行緒設定了 user_id=42（用於追蹤請求）\n  提交任務到執行緒池後，子執行緒讀到 null\n  → 日誌無法關聯到正確的請求 ID\n  → 解決方案：改用 InheritableThreadLocal（見 14.5）\n              或手動在 submit 時捕獲並傳遞值
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
-n3-&gt;n4
+<pre><code class="language-text">  父執行緒 vs 子執行緒的 ThreadLocal 隔離
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  父執行緒（Parent Thread）                                       │
+  │  threadLocals: { TL_user_id → 42, TL_request → "req-001" }    │
+  └────────────────────────────┬────────────────────────────────────┘
+                               │ new Thread(...)  或  pool.submit(...)
+                               │ 建立子執行緒
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  子執行緒（Child Thread）                                        │
+  │  threadLocals: { }   ← 空 Map！                                 │
+  │                                                                 │
+  │  child.get(TL_user_id)  → null（或 initialValue()）            │
+  │  child.get(TL_request)  → null（或 initialValue()）            │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ⚠️  常見問題：
+  父執行緒設定了 user_id=42（用於追蹤請求）
+  提交任務到執行緒池後，子執行緒讀到 null
+  → 日誌無法關聯到正確的請求 ID
+  → 解決方案：改用 InheritableThreadLocal（見 14.5）
+              或手動在 submit 時捕獲並傳遞值
 </code></pre>
 <p>子執行緒預設看不到父執行緒 ThreadLocal。</p>
 <p>這個設計是有意的：ThreadLocal 的語義是「執行緒私有」，若自動繼承反而破壞隔離性。但在請求追蹤（Trace ID）等場景確實需要傳遞上下文，此時應使用 InheritableThreadLocal 或顯式傳遞。</p>
 <h2 id="145146-可繼承變體"><a class="header" href="#145146-可繼承變體">14.5~14.6 可繼承變體</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation:   InheritableThreadLocal：建立子執行緒時複製快照\n　\n  ┌──────────────────────────────────────────────────────────────────┐\n  │  父執行緒                                                            │\n  │  inheritableThreadLocals: { ITL_user → 42, ITL_locale → "zh" }   │\n  └────────────────────────────┬─────────────────────────────────────┘
-n2=&gt;operation:                                │ new Thread() 時，JVM 自動複製快照\n                               ▼\n  ┌──────────────────────────────────────────────────────────────────┐\n  │  子執行緒（建立時複製）                                                     │\n  │  inheritableThreadLocals: { ITL_user → 42, ITL_locale → "zh" }   │\n  │                           ↑ 獨立副本，修改互不影響                          │
-n3=&gt;operation:   └──────────────────────────────────────────────────────────────────┘\n　\n  child.set(ITL_user, 99)  → 只影響子執行緒，父執行緒仍是 42\n　\n  ⚠️  執行緒池問題：\n  Pool 中的執行緒在建立時已複製，之後複用時不會再複製
-n4=&gt;operation:   父執行緒後續修改的值，Pool Worker 看不到\n　\n  ─────────────────────────────────────────────────────────────────\n　\n  設計哲學對比：Java vs Go\n　
-n5=&gt;operation:   Java：隱式攜帶（InheritableThreadLocal）\n  ┌──────────────────────────────────────────────────────────────────┐\n  │ 上下文隱藏在執行緒內部                                                      │\n  │ 優點：呼叫方不需要傳參                                                      │\n  │ 缺點：隱式依賴，難以追蹤                                                     │\n  └──────────────────────────────────────────────────────────────────┘
-n6=&gt;operation: 　\n  Go：顯式傳遞（context.Context）\n  ┌──────────────────────────────────────────────────────────────────┐\n  │ func process(ctx context.Context) {                              │\n  │     userID := ctx.Value("user_id")                               │\n  │     child(ctx)  ← 顯式傳遞                                           │
-n7=&gt;operation:   │ }                                                                │\n  │ 優點：資料流向清晰，易於測試                                                   │\n  │ 缺點：所有函式都需要加 ctx 參數                                               │\n  └──────────────────────────────────────────────────────────────────┘
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
-n3-&gt;n4
-n4-&gt;n5
-n5-&gt;n6
-n6-&gt;n7
+<pre><code class="language-text">  InheritableThreadLocal：建立子執行緒時複製快照
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  父執行緒                                                        │
+  │  inheritableThreadLocals: { ITL_user → 42, ITL_locale → "zh" } │
+  └────────────────────────────┬────────────────────────────────────┘
+                               │ new Thread() 時，JVM 自動複製快照
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  子執行緒（建立時複製）                                          │
+  │  inheritableThreadLocals: { ITL_user → 42, ITL_locale → "zh" } │
+  │                           ↑ 獨立副本，修改互不影響               │
+  └─────────────────────────────────────────────────────────────────┘
+
+  child.set(ITL_user, 99)  → 只影響子執行緒，父執行緒仍是 42
+
+  ⚠️  執行緒池問題：
+  Pool 中的執行緒在建立時已複製，之後複用時不會再複製
+  父執行緒後續修改的值，Pool Worker 看不到
+
+  ─────────────────────────────────────────────────────────────────
+
+  設計哲學對比：Java vs Go
+
+  Java：隱式攜帶（InheritableThreadLocal）
+  ┌──────────────────────────────────────────┐
+  │ 上下文隱藏在執行緒內部                   │
+  │ 優點：呼叫方不需要傳參                   │
+  │ 缺點：隱式依賴，難以追蹤                 │
+  └──────────────────────────────────────────┘
+
+  Go：顯式傳遞（context.Context）
+  ┌──────────────────────────────────────────┐
+  │ func process(ctx context.Context) {      │
+  │     userID := ctx.Value("user_id")       │
+  │     child(ctx)  ← 顯式傳遞              │
+  │ }                                        │
+  │ 優點：資料流向清晰，易於測試             │
+  │ 缺點：所有函式都需要加 ctx 參數          │
+  └──────────────────────────────────────────┘
 </code></pre>
 <p>InheritableThreadLocal 可在建立子執行緒時複製上下文。</p>
 <p>跨語言對比：</p>
@@ -240,9 +305,8 @@ n6-&gt;n7
 <li>Rust: <code>thread_local!</code> — 宏定義，支援懶初始化</li>
 <li>Go: 常用 <code>context.Context</code> 顯式傳遞，不鼓勵隱式 thread local；這反映了 Go 「明確優於隱式」的設計哲學</li>
 </ul>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation: Thread A: user_id=42\nThread B: user_id=? (預設拿不到 A 的值)
-st-&gt;n1
+<pre><code class="language-text">Thread A: user_id=42
+Thread B: user_id=? (預設拿不到 A 的值)
 </code></pre>
 <h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
 <p>執行緒本地儲存：每個執行緒有自己的 user_id，互不干擾，演示隔離性。</p>
@@ -507,7 +571,6 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/flowchart-init.js"></script>
 
 
 

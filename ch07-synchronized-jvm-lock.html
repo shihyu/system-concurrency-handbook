@@ -29,7 +29,6 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/flowchart.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -180,27 +179,61 @@
 <h2 id="71-語法層對應-711713"><a class="header" href="#71-語法層對應-711713">7.1 語法層（對應 7.1.1~7.1.3）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖"><a class="header" href="#本小節示意圖">本小節示意圖</a></h3>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation:   synchronized 三種語法形式與 bytecode 對應\n  ════════════════════════════════════════════════════════\n　\n  形式 1：實例方法（鎖 this）\n  ┌────────────────────────────────────────────────────────┐\n  │  Java 源碼                                               │
-n2=&gt;operation:   │  synchronized void increment() { count++; }            │\n  │                                                        │\n  │  bytecode（ACC_SYNCHRONIZED flag）                       │\n  │  方法描述符帶有 ACC_SYNCHRONIZED                              │\n  │  JVM 執行前自動 monitorenter(this)                          │\n  │  JVM 執行後自動 monitorexit(this)                           │
-n3=&gt;operation:   │                                                        │\n  │  鎖對象：this（呼叫此方法的實例）                                    │\n  └────────────────────────────────────────────────────────┘\n　\n  形式 2：靜態方法（鎖 Class 對象）\n  ┌────────────────────────────────────────────────────────┐
-n4=&gt;operation:   │  Java 源碼                                               │\n  │  static synchronized void reset() { count = 0; }       │\n  │                                                        │\n  │  bytecode（ACC_STATIC + ACC_SYNCHRONIZED）               │\n  │  JVM 執行前 monitorenter(Counter.class)                   │\n  │  JVM 執行後 monitorexit(Counter.class)                    │
-n5=&gt;operation:   │                                                        │\n  │  鎖對象：Counter.class（JVM 中 Class 對象）                     │\n  │  ⚠ 與實例鎖不同，互不衝突                                         │\n  └────────────────────────────────────────────────────────┘\n　\n  形式 3：程式區塊（鎖指定對象）
-n6=&gt;operation:   ┌────────────────────────────────────────────────────────┐\n  │  Java 源碼                                               │\n  │  synchronized (lockObj) {                              │\n  │      // critical section                               │\n  │  }                                                     │\n  │                                                        │
-n7=&gt;operation:   │  bytecode（顯式指令）                                        │\n  │  0: aload lockObj    ← 將鎖對象壓棧                          │\n  │  1: monitorenter     ← 嘗試獲取 monitor                    │\n  │  2: ... body ...                                       │\n  │  3: monitorexit      ← 正常退出釋放                          │\n  │  4: (exception path) │                                 │
-n8=&gt;operation:   │  5: monitorexit      ← 異常退出也釋放（finally）                │\n  │                                                        │\n  │  鎖對象：lockObj（任意 Object）                                │\n  └────────────────────────────────────────────────────────┘\n　\n  三種形式對比：
-n9=&gt;operation:   ┌─────────────────┬────────────────┬─────────────────────┐\n  │ 形式             │ 鎖對象          │ 適用場景                   │\n  ├─────────────────┼────────────────┼─────────────────────┤\n  │ 實例方法           │ this           │ 保護實例狀態               │\n  │ 靜態方法           │ ClassName.class│ 保護靜態狀態               │\n  │ synchronized 塊 │ 指定 Object    │ 精細控制臨界區                │
-n10=&gt;operation:   └─────────────────┴────────────────┴─────────────────────┘
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
-n3-&gt;n4
-n4-&gt;n5
-n5-&gt;n6
-n6-&gt;n7
-n7-&gt;n8
-n8-&gt;n9
-n9-&gt;n10
+<pre><code class="language-text">  synchronized 三種語法形式與 bytecode 對應
+  ════════════════════════════════════════════════════════
+
+  形式 1：實例方法（鎖 this）
+  ┌─────────────────────────────────────────────────────┐
+  │  Java 源碼                                          │
+  │  synchronized void increment() { count++; }         │
+  │                                                     │
+  │  bytecode（ACC_SYNCHRONIZED flag）                  │
+  │  方法描述符帶有 ACC_SYNCHRONIZED                    │
+  │  JVM 執行前自動 monitorenter(this)                  │
+  │  JVM 執行後自動 monitorexit(this)                   │
+  │                                                     │
+  │  鎖對象：this（呼叫此方法的實例）                   │
+  └─────────────────────────────────────────────────────┘
+
+  形式 2：靜態方法（鎖 Class 對象）
+  ┌─────────────────────────────────────────────────────┐
+  │  Java 源碼                                          │
+  │  static synchronized void reset() { count = 0; }   │
+  │                                                     │
+  │  bytecode（ACC_STATIC + ACC_SYNCHRONIZED）          │
+  │  JVM 執行前 monitorenter(Counter.class)             │
+  │  JVM 執行後 monitorexit(Counter.class)              │
+  │                                                     │
+  │  鎖對象：Counter.class（JVM 中 Class 對象）         │
+  │  ⚠ 與實例鎖不同，互不衝突                          │
+  └─────────────────────────────────────────────────────┘
+
+  形式 3：程式區塊（鎖指定對象）
+  ┌─────────────────────────────────────────────────────┐
+  │  Java 源碼                                          │
+  │  synchronized (lockObj) {                           │
+  │      // critical section                            │
+  │  }                                                  │
+  │                                                     │
+  │  bytecode（顯式指令）                               │
+  │  0: aload lockObj    ← 將鎖對象壓棧                 │
+  │  1: monitorenter     ← 嘗試獲取 monitor             │
+  │  2: ... body ...                                    │
+  │  3: monitorexit      ← 正常退出釋放                 │
+  │  4: (exception path) │                             │
+  │  5: monitorexit      ← 異常退出也釋放（finally）   │
+  │                                                     │
+  │  鎖對象：lockObj（任意 Object）                     │
+  └─────────────────────────────────────────────────────┘
+
+  三種形式對比：
+  ┌─────────────────┬────────────────┬──────────────────┐
+  │ 形式            │ 鎖對象         │ 適用場景         │
+  ├─────────────────┼────────────────┼──────────────────┤
+  │ 實例方法        │ this           │ 保護實例狀態     │
+  │ 靜態方法        │ ClassName.class│ 保護靜態狀態     │
+  │ synchronized 塊 │ 指定 Object    │ 精細控制臨界區   │
+  └─────────────────┴────────────────┴──────────────────┘
 </code></pre>
 <ul>
 <li>實例方法鎖 <code>this</code></li>
@@ -210,78 +243,168 @@ n9-&gt;n10
 <h2 id="7273-物件頭與鎖標記對應-721733"><a class="header" href="#7273-物件頭與鎖標記對應-721733">7.2~7.3 物件頭與鎖標記（對應 7.2.1~7.3.3）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-1"><a class="header" href="#本小節示意圖-1">本小節示意圖</a></h3>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation:   64-bit JVM 物件頭（Mark Word）布局\n  ════════════════════════════════════════════════════════\n　\n  Mark Word（64 bit = 8 bytes）在不同鎖狀態下的含義：\n　\n  無鎖狀態（biasable）：
-n2=&gt;operation:   ┌──────────────────────────┬──────┬─────┬──┬────────────────────┐\n  │  hashcode (31b) / unused         │ age  │  0  │0 │1           │\n  │  bit 63 ─────────── 7            │ 4b   │ 1b  │1b│1b          │\n  └──────────────────────────┴──────┴─────┴──┴────────────────────┘\n                                               └─ lock bits = 01\n　
-n3=&gt;operation:   偏向鎖（Biased Lock）：\n  ┌───────────────────────────────────┬──────┬──┬──┬──────────────┐\n  │  Thread ID (54b)  │ epoch (2b)    │ age  │1 │0 │1             │\n  │  bit 63 ──────────────────── 10  │  4b  │1b│1b│1b             │\n  └───────────────────────────────────┴──────┴──┴──┴──────────────┘\n                                                   └─ lock bits = 01, biased=1
-n4=&gt;operation: 　\n  輕量鎖（Lightweight Lock，CAS 競爭）：\n  ┌────────────────────────────────────────────────┬──┬───────────┐\n  │  Lock Record 指針（ptr to stack frame）(62b)       │0 │0          │\n  │  bit 63 ──────────────────────────────────── 2 │1b│1b         │\n  └────────────────────────────────────────────────┴──┴───────────┘
-n5=&gt;operation:                                                        └─ lock bits = 00\n　\n  重量鎖（Heavyweight Lock，OS mutex）：\n  ┌────────────────────────────────────────────────┬──┬───────────┐\n  │  Monitor 物件指針（ptr to ObjectMonitor）(62b)       │1 │0          │\n  │  bit 63 ──────────────────────────────────── 2 │1b│1b         │
-n6=&gt;operation:   └────────────────────────────────────────────────┴──┴───────────┘\n                                                       └─ lock bits = 10\n　\n  GC 標記（Marked for GC）：\n  ┌────────────────────────────────────────────────┬──┬───────────┐\n  │  forwarding pointer                            │1 │1          │
-n7=&gt;operation:   └────────────────────────────────────────────────┴──┴───────────┘\n                                                       └─ lock bits = 11\n　\n  lock bits 速查表：\n  ┌───────────┬───────────────────────────────────────────────────┐\n  │ lock bits │ 含義                                                │
-n8=&gt;operation:   ├───────────┼───────────────────────────────────────────────────┤\n  │    01     │ 無鎖（biasable=0）或 偏向鎖（biased=1）                     │\n  │    00     │ 輕量鎖（CAS LockRecord 指針）                            │\n  │    10     │ 重量鎖（Monitor 物件指針）                                 │\n  │    11     │ GC 標記中                                            │\n  └───────────┴───────────────────────────────────────────────────┘
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
-n3-&gt;n4
-n4-&gt;n5
-n5-&gt;n6
-n6-&gt;n7
-n7-&gt;n8
+<pre><code class="language-text">  64-bit JVM 物件頭（Mark Word）布局
+  ════════════════════════════════════════════════════════
+
+  Mark Word（64 bit = 8 bytes）在不同鎖狀態下的含義：
+
+  無鎖狀態（biasable）：
+  ┌──────────────────────────┬──────┬─────┬──┬──┐
+  │  hashcode (31b) / unused │ age  │  0  │0 │1 │
+  │  bit 63 ─────────── 7   │ 4b   │ 1b  │1b│1b│
+  └──────────────────────────┴──────┴─────┴──┴──┘
+                                               └─ lock bits = 01
+
+  偏向鎖（Biased Lock）：
+  ┌───────────────────────────────────┬──────┬──┬──┬──┐
+  │  Thread ID (54b)  │ epoch (2b)    │ age  │1 │0 │1 │
+  │  bit 63 ──────────────────── 10  │  4b  │1b│1b│1b│
+  └───────────────────────────────────┴──────┴──┴──┴──┘
+                                                   └─ lock bits = 01, biased=1
+
+  輕量鎖（Lightweight Lock，CAS 競爭）：
+  ┌────────────────────────────────────────────────┬──┬──┐
+  │  Lock Record 指針（ptr to stack frame）(62b)   │0 │0 │
+  │  bit 63 ──────────────────────────────────── 2│1b│1b│
+  └────────────────────────────────────────────────┴──┴──┘
+                                                       └─ lock bits = 00
+
+  重量鎖（Heavyweight Lock，OS mutex）：
+  ┌────────────────────────────────────────────────┬──┬──┐
+  │  Monitor 物件指針（ptr to ObjectMonitor）(62b) │1 │0 │
+  │  bit 63 ──────────────────────────────────── 2│1b│1b│
+  └────────────────────────────────────────────────┴──┴──┘
+                                                       └─ lock bits = 10
+
+  GC 標記（Marked for GC）：
+  ┌────────────────────────────────────────────────┬──┬──┐
+  │  forwarding pointer                            │1 │1 │
+  └────────────────────────────────────────────────┴──┴──┘
+                                                       └─ lock bits = 11
+
+  lock bits 速查表：
+  ┌───────────┬─────────────────────────────────────────┐
+  │ lock bits │ 含義                                    │
+  ├───────────┼─────────────────────────────────────────┤
+  │    01     │ 無鎖（biasable=0）或 偏向鎖（biased=1） │
+  │    00     │ 輕量鎖（CAS LockRecord 指針）           │
+  │    10     │ 重量鎖（Monitor 物件指針）              │
+  │    11     │ GC 標記中                               │
+  └───────────┴─────────────────────────────────────────┘
 </code></pre>
 <p>這是 JVM 實作細節：物件頭記錄鎖狀態。</p>
 <h2 id="7475-monitor-與-bytecode對應-741754"><a class="header" href="#7475-monitor-與-bytecode對應-741754">7.4~7.5 Monitor 與 bytecode（對應 7.4.1~7.5.4）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-2"><a class="header" href="#本小節示意圖-2">本小節示意圖</a></h3>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation:   ObjectMonitor 結構與 monitorenter/exit 流程\n  ════════════════════════════════════════════════════════\n　\n  ObjectMonitor 內部結構：\n  ┌─────────────────────────────────────────────────────────────────┐\n  │                ObjectMonitor                                    │
-n2=&gt;operation:   │                                                                 │\n  │  ┌─────────────────────────────────────────────┐                │\n  │  │  owner: Thread*    ← 當前持有鎖的執行緒              │                │\n  │  │  recursions: int   ← 重入計數器                  │                │\n  │  └─────────────────────────────────────────────┘                │\n  │                                                                 │
-n3=&gt;operation:   │  ┌─────────────────────────────────────────────┐                │\n  │  │  EntryList: LinkedList&lt;Thread&gt;              │                │\n  │  │  （等待獲取鎖的執行緒佇列）                              │                │\n  │  │  T2 ──► T3 ──► T4                           │                │\n  │  └─────────────────────────────────────────────┘                │\n  │                                                                 │
-n4=&gt;operation:   │  ┌─────────────────────────────────────────────┐                │\n  │  │  WaitSet: LinkedList&lt;Thread&gt;                │                │\n  │  │  （呼叫 wait() 後進入的執行緒集合）                      │                │\n  │  │  T5 ──► T6                                  │                │\n  │  └─────────────────────────────────────────────┘                │\n  └─────────────────────────────────────────────────────────────────┘
-n5=&gt;operation: 　\n  monitorenter 流程：\n  ┌─────────────────────────────────────────────────────────────────┐\n  │  執行緒嘗試 monitorenter                                             │\n  │       │                                                         │\n  │       ▼                                                         │
-n6=&gt;operation:   │  owner == null ?                                                │\n  │  ├─ 是 ──► CAS 設定 owner = 自己 ──► 成功，進入                           │\n  │  │                                                              │\n  │  └─ 否 ──► owner == 自己（重入）?                                      │\n  │            ├─ 是 ──► recursions++ ──► 進入                         │\n  │            │                                                    │
-n7=&gt;operation:   │            └─ 否 ──► 加入 EntryList                                │\n  │                       park()（OS 睡眠）                             │\n  │                       等待 owner 釋放後被喚醒                           │\n  └─────────────────────────────────────────────────────────────────┘\n　\n  monitorexit 流程：
-n8=&gt;operation:   ┌─────────────────────────────────────────────────────────────────┐\n  │  執行緒執行 monitorexit                                              │\n  │       │                                                         │\n  │       ▼                                                         │\n  │  recursions &gt; 0 ?                                               │\n  │  ├─ 是 ──► recursions-- ──► 繼續持有                                 │
-n9=&gt;operation:   │  │                                                              │\n  │  └─ 否 ──► owner = null                                          │\n  │            從 EntryList 選一個執行緒 unpark()                          │\n  │            被喚醒的執行緒重新競爭 monitorenter                             │\n  └─────────────────────────────────────────────────────────────────┘
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
-n3-&gt;n4
-n4-&gt;n5
-n5-&gt;n6
-n6-&gt;n7
-n7-&gt;n8
-n8-&gt;n9
+<pre><code class="language-text">  ObjectMonitor 結構與 monitorenter/exit 流程
+  ════════════════════════════════════════════════════════
+
+  ObjectMonitor 內部結構：
+  ┌─────────────────────────────────────────────────────┐
+  │                ObjectMonitor                        │
+  │                                                     │
+  │  ┌─────────────────────────────────────────────┐   │
+  │  │  owner: Thread*    ← 當前持有鎖的執行緒      │   │
+  │  │  recursions: int   ← 重入計數器              │   │
+  │  └─────────────────────────────────────────────┘   │
+  │                                                     │
+  │  ┌─────────────────────────────────────────────┐   │
+  │  │  EntryList: LinkedList&lt;Thread&gt;              │   │
+  │  │  （等待獲取鎖的執行緒佇列）                  │   │
+  │  │  T2 ──► T3 ──► T4                          │   │
+  │  └─────────────────────────────────────────────┘   │
+  │                                                     │
+  │  ┌─────────────────────────────────────────────┐   │
+  │  │  WaitSet: LinkedList&lt;Thread&gt;                │   │
+  │  │  （呼叫 wait() 後進入的執行緒集合）          │   │
+  │  │  T5 ──► T6                                  │   │
+  │  └─────────────────────────────────────────────┘   │
+  └─────────────────────────────────────────────────────┘
+
+  monitorenter 流程：
+  ┌─────────────────────────────────────────────────────┐
+  │  執行緒嘗試 monitorenter                            │
+  │       │                                             │
+  │       ▼                                             │
+  │  owner == null ?                                    │
+  │  ├─ 是 ──► CAS 設定 owner = 自己 ──► 成功，進入    │
+  │  │                                                  │
+  │  └─ 否 ──► owner == 自己（重入）?                  │
+  │            ├─ 是 ──► recursions++ ──► 進入          │
+  │            │                                        │
+  │            └─ 否 ──► 加入 EntryList                │
+  │                       park()（OS 睡眠）             │
+  │                       等待 owner 釋放後被喚醒       │
+  └─────────────────────────────────────────────────────┘
+
+  monitorexit 流程：
+  ┌─────────────────────────────────────────────────────┐
+  │  執行緒執行 monitorexit                             │
+  │       │                                             │
+  │       ▼                                             │
+  │  recursions &gt; 0 ?                                   │
+  │  ├─ 是 ──► recursions-- ──► 繼續持有               │
+  │  │                                                  │
+  │  └─ 否 ──► owner = null                            │
+  │            從 EntryList 選一個執行緒 unpark()       │
+  │            被喚醒的執行緒重新競爭 monitorenter      │
+  └─────────────────────────────────────────────────────┘
 </code></pre>
 <p>進入臨界區會走 <code>monitorenter</code>，離開走 <code>monitorexit</code>。</p>
 <h2 id="76710-鎖升級與優化對應-76710"><a class="header" href="#76710-鎖升級與優化對應-76710">7.6~7.10 鎖升級與優化（對應 7.6~7.10）</a></h2>
 <!-- subsection-diagram -->
 <h3 id="本小節示意圖-3"><a class="header" href="#本小節示意圖-3">本小節示意圖</a></h3>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation:   JVM 鎖升級路徑（只能升級，不可降級）\n  ════════════════════════════════════════════════════════\n　\n  ┌────────────────────────────────────────────────────────────┐\n  │                                                            │\n  │  ┌──────────┐                                              │
-n2=&gt;operation:   │  │  無鎖          │ lock bits = 01（biased=0）                 │\n  │  │ Unlocked     │ 首次分配物件，等待首次鎖定                            │\n  │  └────┬─────┘                                              │\n  │       │ 首次被某執行緒獲取（無競爭）                                     │\n  │       ▼ 在 Mark Word 記錄 Thread ID                           │\n  │  ┌──────────────┐                                          │
-n3=&gt;operation:   │  │  偏向鎖         │ lock bits = 01（biased=1）                 │\n  │  │ Biased Lock  │ CAS 寫入 Thread ID，後續進入免 CAS               │\n  │  └──────┬───────┘ 優點：單執行緒場景近乎無鎖效能                          │\n  │         │                                                  │\n  │         │ 觸發條件：另一個執行緒嘗試獲取                                  │\n  │         │ → 觸發 STW（Stop-The-World）撤銷偏向鎖                    │
-n4=&gt;operation:   │         ▼                                                  │\n  │  ┌──────────────┐                                          │\n  │  │  輕量鎖         │ lock bits = 00                           │\n  │  │ Lightweight  │ 在執行緒棧幀建立 Lock Record                     │\n  │  │    Lock      │ CAS 將 Mark Word 指向 Lock Record           │\n  │  └──────┬───────┘ 優點：避免 OS mutex，自旋等待                      │
-n5=&gt;operation:   │         │                                                  │\n  │         │ 觸發條件：CAS 自旋超過閾值（預設 10 次）                         │\n  │         │ 或 等待執行緒數 &gt; 1                                     │\n  │         ▼                                                  │\n  │  ┌──────────────┐                                          │\n  │  │  重量鎖         │ lock bits = 10                           │
-n6=&gt;operation:   │  │ Heavyweight  │ Mark Word 指向 ObjectMonitor               │\n  │  │    Lock      │ 使用 OS Mutex（pthread_mutex）               │\n  │  └──────────────┘ 代價最高，但公平，支援 wait/notify                  │\n  │                                                            │\n  │  升級觸發條件總結：                                                 │\n  │  ┌────────────────┬──────────────────────────────┐         │
-n7=&gt;operation:   │  │ 無鎖 → 偏向鎖 │ 第一次被任意執行緒獲取        │                         │\n  │  │ 偏向鎖→輕量鎖  │ 第二個執行緒競爭（撤銷偏向）     │                         │\n  │  │ 輕量鎖→重量鎖  │ 自旋 CAS 失敗次數超過閾值    │                         │\n  │  └────────────────┴──────────────────────────────┘         │\n  └────────────────────────────────────────────────────────────┘
-st-&gt;n1
-n1-&gt;n2
-n2-&gt;n3
-n3-&gt;n4
-n4-&gt;n5
-n5-&gt;n6
-n6-&gt;n7
+<pre><code class="language-text">  JVM 鎖升級路徑（只能升級，不可降級）
+  ════════════════════════════════════════════════════════
+
+  ┌──────────────────────────────────────────────────────┐
+  │                                                      │
+  │  ┌──────────┐                                        │
+  │  │  無鎖    │ lock bits = 01（biased=0）             │
+  │  │ Unlocked │ 首次分配物件，等待首次鎖定             │
+  │  └────┬─────┘                                        │
+  │       │ 首次被某執行緒獲取（無競爭）                 │
+  │       ▼ 在 Mark Word 記錄 Thread ID                  │
+  │  ┌──────────────┐                                    │
+  │  │  偏向鎖      │ lock bits = 01（biased=1）         │
+  │  │ Biased Lock  │ CAS 寫入 Thread ID，後續進入免 CAS │
+  │  └──────┬───────┘ 優點：單執行緒場景近乎無鎖效能    │
+  │         │                                            │
+  │         │ 觸發條件：另一個執行緒嘗試獲取             │
+  │         │ → 觸發 STW（Stop-The-World）撤銷偏向鎖     │
+  │         ▼                                            │
+  │  ┌──────────────┐                                    │
+  │  │  輕量鎖      │ lock bits = 00                     │
+  │  │ Lightweight  │ 在執行緒棧幀建立 Lock Record       │
+  │  │    Lock      │ CAS 將 Mark Word 指向 Lock Record  │
+  │  └──────┬───────┘ 優點：避免 OS mutex，自旋等待     │
+  │         │                                            │
+  │         │ 觸發條件：CAS 自旋超過閾值（預設 10 次）   │
+  │         │ 或 等待執行緒數 &gt; 1                        │
+  │         ▼                                            │
+  │  ┌──────────────┐                                    │
+  │  │  重量鎖      │ lock bits = 10                     │
+  │  │ Heavyweight  │ Mark Word 指向 ObjectMonitor       │
+  │  │    Lock      │ 使用 OS Mutex（pthread_mutex）     │
+  │  └──────────────┘ 代價最高，但公平，支援 wait/notify│
+  │                                                      │
+  │  升級觸發條件總結：                                  │
+  │  ┌────────────────┬──────────────────────────────┐  │
+  │  │ 無鎖 → 偏向鎖 │ 第一次被任意執行緒獲取        │  │
+  │  │ 偏向鎖→輕量鎖 │ 第二個執行緒競爭（撤銷偏向）  │  │
+  │  │ 輕量鎖→重量鎖 │ 自旋 CAS 失敗次數超過閾值    │  │
+  │  └────────────────┴──────────────────────────────┘  │
+  └──────────────────────────────────────────────────────┘
 </code></pre>
 <p>偏向鎖 -&gt; 輕量鎖 -&gt; 重量鎖，競爭越激烈成本越高。</p>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation: 低競爭: fast path\n高競爭: 進入等待佇列 + 喚醒
-st-&gt;n1
+<pre><code class="language-text">低競爭: fast path
+高競爭: 進入等待佇列 + 喚醒
 </code></pre>
 <p>跨語言對應：其他語言沒有 <code>synchronized</code> 關鍵字，但 runtime 也有類似 fast/slow path 優化。</p>
 <h2 id="示意圖"><a class="header" href="#示意圖">示意圖</a></h2>
-<pre><code class="language-flowchart">st=&gt;start: 示意圖
-n1=&gt;operation: monitor(owner=T1)\nqueue: T2 → T3\nT1 exit monitor → wake T2
-st-&gt;n1
+<pre><code class="language-text">monitor(owner=T1)
+queue: T2 -&gt; T3
+T1 exit monitor -&gt; wake T2
 </code></pre>
 <h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
 <p>主題：mutex 保護共享計數器（4 個執行緒各加 10000 次，驗證最終結果正確）</p>
@@ -499,7 +622,6 @@ if __name__ == "__main__":
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/flowchart-init.js"></script>
 
 
 
