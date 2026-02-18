@@ -29,7 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/ascii-diagram.css">
+        <link rel="stylesheet" href="theme/flowchart.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -185,9 +185,9 @@
 <li>高吞吐不是只靠語法，而是整條鏈路一起優化。</li>
 </ol>
 <h2 id="統一心智模型"><a class="header" href="#統一心智模型">統一心智模型</a></h2>
-<pre><code class="language-text">請求 -&gt; 任務切分 -&gt; 排隊 -&gt; 執行 -&gt; 寫回資料
-           |         |       |
-         分工      背壓    一致性
+<pre><code class="language-flowchart">st=&gt;start: 示意圖
+n1=&gt;operation: 請求 → 任務切分 → 排隊 → 執行 → 寫回資料\n           ｜         ｜       ｜\n         分工      背壓    一致性
+st-&gt;n1
 </code></pre>
 <h2 id="語言對照最小表"><a class="header" href="#語言對照最小表">語言對照最小表</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>通用概念</th><th>Java</th><th>C/C++</th><th>Rust</th><th>Go</th></tr></thead><tbody>
@@ -244,6 +244,7 @@
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
+        <script src="theme/flowchart-init.js"></script>
 
 
 

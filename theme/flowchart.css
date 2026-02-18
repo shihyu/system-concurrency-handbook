@@ -1,0 +1,20 @@
+.flowchart-diagram {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  overflow-x: auto;
+  border: 1px solid var(--table-border-color, #9993);
+  border-radius: 6px;
+  background: var(--quote-bg, #00000008);
+}
+
+.flowchart-diagram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.flowchart-error {
+  color: #b00020;
+  white-space: pre-wrap;
+  font-family: monospace;
+}

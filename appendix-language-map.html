@@ -29,7 +29,7 @@
         <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/ascii-diagram.css">
+        <link rel="stylesheet" href="theme/flowchart.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -194,12 +194,14 @@
 </div>
 <h2 id="一個跨語言都成立的原則"><a class="header" href="#一個跨語言都成立的原則">一個跨語言都成立的原則</a></h2>
 <p>先保證正確性，再談吞吐。</p>
-<pre><code class="language-text">正確性(資料不錯) -&gt; 可用性(不死鎖) -&gt; 效能(夠快)
+<pre><code class="language-flowchart">st=&gt;start: 示意圖
+n1=&gt;operation: 正確性(資料不錯) → 可用性(不死鎖) → 效能(夠快)
+st-&gt;n1
 </code></pre>
 <h2 id="共同最小模板"><a class="header" href="#共同最小模板">共同最小模板</a></h2>
-<pre><code class="language-text">1) 先用 atomic 解決單變數競態
-2) 需要複合一致性時改用 lock
-3) 併發量大再加 queue/pool/backpressure
+<pre><code class="language-flowchart">st=&gt;start: 示意圖
+n1=&gt;operation: 1) 先用 atomic 解決單變數競態\n2) 需要複合一致性時改用 lock\n3) 併發量大再加 queue/pool/backpressure
+st-&gt;n1
 </code></pre>
 <pre><code class="language-c">// C: atomic -&gt; mutex 升級路徑
 #include &lt;stdatomic.h&gt;
@@ -245,223 +247,14 @@ with lock:                        # 安全的複合操作
 </tbody></table>
 </div>
 <h2 id="選型快速決策"><a class="header" href="#選型快速決策">選型快速決策</a></h2>
-<div class="ascii-svg-wrap">
-<svg class="ascii-svg" xmlns="http://www.w3.org/2000/svg" width="548" height="324" viewBox="0 0 548 324" role="img" aria-label="ASCII diagram">
-<g stroke="currentColor" stroke-width="1.8" stroke-linecap="square" fill="none">
-<line x1="39.0" y1="34" x2="39.0" y2="42.0"/>
-<line x1="39.0" y1="42.0" x2="39.0" y2="50"/>
-<line x1="39.0" y1="42.0" x2="44" y2="42.0"/>
-<line x1="44" y1="42.0" x2="49.0" y2="42.0"/>
-<line x1="49.0" y1="42.0" x2="54" y2="42.0"/>
-<line x1="39.0" y1="62.0" x2="44" y2="62.0"/>
-<line x1="39.0" y1="54" x2="39.0" y2="62.0"/>
-<line x1="44" y1="62.0" x2="49.0" y2="62.0"/>
-<line x1="49.0" y1="62.0" x2="54" y2="62.0"/>
-<line x1="39.0" y1="122.0" x2="44" y2="122.0"/>
-<line x1="39.0" y1="114" x2="39.0" y2="122.0"/>
-<line x1="44" y1="122.0" x2="49.0" y2="122.0"/>
-<line x1="49.0" y1="122.0" x2="54" y2="122.0"/>
-<line x1="39.0" y1="182.0" x2="44" y2="182.0"/>
-<line x1="39.0" y1="174" x2="39.0" y2="182.0"/>
-<line x1="44" y1="182.0" x2="49.0" y2="182.0"/>
-<line x1="49.0" y1="182.0" x2="54" y2="182.0"/>
-<line x1="39.0" y1="242.0" x2="44" y2="242.0"/>
-<line x1="39.0" y1="234" x2="39.0" y2="242.0"/>
-<line x1="44" y1="242.0" x2="49.0" y2="242.0"/>
-<line x1="49.0" y1="242.0" x2="54" y2="242.0"/>
-<line x1="39.0" y1="302.0" x2="44" y2="302.0"/>
-<line x1="39.0" y1="294" x2="39.0" y2="302.0"/>
-<line x1="44" y1="302.0" x2="49.0" y2="302.0"/>
-<line x1="49.0" y1="302.0" x2="54" y2="302.0"/>
-</g>
-<g fill="currentColor" font-family="Noto Sans Mono CJK TC, Noto Sans Mono CJK SC, Noto Sans Mono CJK JP, Sarasa Mono TC, Cascadia Mono, JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace" font-size="16" text-rendering="geometricPrecision" xml:space="preserve">
-<text x="14" y="26">需</text>
-<text x="34" y="26">要</text>
-<text x="54" y="26">多</text>
-<text x="74" y="26">核</text>
-<text x="104" y="26">C</text>
-<text x="114" y="26">P</text>
-<text x="124" y="26">U</text>
-<text x="144" y="26">並</text>
-<text x="164" y="26">行</text>
-<text x="184" y="26">運</text>
-<text x="204" y="26">算</text>
-<text x="224" y="26">？</text>
-<text x="64" y="46">是</text>
-<text x="94" y="46">→</text>
-<text x="114" y="46">C</text>
-<text x="124" y="46">/</text>
-<text x="134" y="46">C</text>
-<text x="144" y="46">+</text>
-<text x="154" y="46">+</text>
-<text x="164" y="46">/</text>
-<text x="174" y="46">R</text>
-<text x="184" y="46">u</text>
-<text x="194" y="46">s</text>
-<text x="204" y="46">t</text>
-<text x="214" y="46">/</text>
-<text x="224" y="46">G</text>
-<text x="234" y="46">o</text>
-<text x="244" y="46">（</text>
-<text x="264" y="46">P</text>
-<text x="274" y="46">y</text>
-<text x="284" y="46">t</text>
-<text x="294" y="46">h</text>
-<text x="304" y="46">o</text>
-<text x="314" y="46">n</text>
-<text x="334" y="46">用</text>
-<text x="364" y="46">m</text>
-<text x="374" y="46">u</text>
-<text x="384" y="46">l</text>
-<text x="394" y="46">t</text>
-<text x="404" y="46">i</text>
-<text x="414" y="46">p</text>
-<text x="424" y="46">r</text>
-<text x="434" y="46">o</text>
-<text x="444" y="46">c</text>
-<text x="454" y="46">e</text>
-<text x="464" y="46">s</text>
-<text x="474" y="46">s</text>
-<text x="484" y="46">i</text>
-<text x="494" y="46">n</text>
-<text x="504" y="46">g</text>
-<text x="514" y="46">）</text>
-<text x="64" y="66">否</text>
-<text x="84" y="66">（</text>
-<text x="104" y="66">I</text>
-<text x="114" y="66">/</text>
-<text x="124" y="66">O</text>
-<text x="144" y="66">密</text>
-<text x="164" y="66">集</text>
-<text x="184" y="66">）</text>
-<text x="204" y="66">→</text>
-<text x="224" y="66">各</text>
-<text x="244" y="66">語</text>
-<text x="264" y="66">言</text>
-<text x="284" y="66">都</text>
-<text x="304" y="66">行</text>
-<text x="324" y="66">，</text>
-<text x="344" y="66">P</text>
-<text x="354" y="66">y</text>
-<text x="364" y="66">t</text>
-<text x="374" y="66">h</text>
-<text x="384" y="66">o</text>
-<text x="394" y="66">n</text>
-<text x="414" y="66">a</text>
-<text x="424" y="66">s</text>
-<text x="434" y="66">y</text>
-<text x="444" y="66">n</text>
-<text x="454" y="66">c</text>
-<text x="464" y="66">i</text>
-<text x="474" y="66">o</text>
-<text x="494" y="66">亦</text>
-<text x="514" y="66">可</text>
-<text x="14" y="106">需</text>
-<text x="34" y="106">要</text>
-<text x="54" y="106">極</text>
-<text x="74" y="106">低</text>
-<text x="94" y="106">延</text>
-<text x="114" y="106">遲</text>
-<text x="134" y="106">無</text>
-<text x="164" y="106">G</text>
-<text x="174" y="106">C</text>
-<text x="184" y="106">？</text>
-<text x="64" y="126">C</text>
-<text x="74" y="126">/</text>
-<text x="84" y="126">C</text>
-<text x="94" y="126">+</text>
-<text x="104" y="126">+</text>
-<text x="114" y="126">/</text>
-<text x="124" y="126">R</text>
-<text x="134" y="126">u</text>
-<text x="144" y="126">s</text>
-<text x="154" y="126">t</text>
-<text x="14" y="166">需</text>
-<text x="34" y="166">要</text>
-<text x="54" y="166">記</text>
-<text x="74" y="166">憶</text>
-<text x="94" y="166">體</text>
-<text x="114" y="166">安</text>
-<text x="134" y="166">全</text>
-<text x="154" y="166">無</text>
-<text x="184" y="166">d</text>
-<text x="194" y="166">a</text>
-<text x="204" y="166">t</text>
-<text x="214" y="166">a</text>
-<text x="234" y="166">r</text>
-<text x="244" y="166">a</text>
-<text x="254" y="166">c</text>
-<text x="264" y="166">e</text>
-<text x="284" y="166">編</text>
-<text x="304" y="166">譯</text>
-<text x="324" y="166">期</text>
-<text x="344" y="166">保</text>
-<text x="364" y="166">證</text>
-<text x="384" y="166">？</text>
-<text x="64" y="186">R</text>
-<text x="74" y="186">u</text>
-<text x="84" y="186">s</text>
-<text x="94" y="186">t</text>
-<text x="14" y="226">需</text>
-<text x="34" y="226">要</text>
-<text x="54" y="226">最</text>
-<text x="74" y="226">簡</text>
-<text x="94" y="226">單</text>
-<text x="114" y="226">的</text>
-<text x="134" y="226">並</text>
-<text x="154" y="226">發</text>
-<text x="174" y="226">模</text>
-<text x="194" y="226">型</text>
-<text x="214" y="226">？</text>
-<text x="64" y="246">G</text>
-<text x="74" y="246">o</text>
-<text x="84" y="246">（</text>
-<text x="104" y="246">g</text>
-<text x="114" y="246">o</text>
-<text x="124" y="246">r</text>
-<text x="134" y="246">o</text>
-<text x="144" y="246">u</text>
-<text x="154" y="246">t</text>
-<text x="164" y="246">i</text>
-<text x="174" y="246">n</text>
-<text x="184" y="246">e</text>
-<text x="204" y="246">+</text>
-<text x="224" y="246">c</text>
-<text x="234" y="246">h</text>
-<text x="244" y="246">a</text>
-<text x="254" y="246">n</text>
-<text x="264" y="246">n</text>
-<text x="274" y="246">e</text>
-<text x="284" y="246">l</text>
-<text x="294" y="246">）</text>
-<text x="14" y="286">需</text>
-<text x="34" y="286">要</text>
-<text x="54" y="286">快</text>
-<text x="74" y="286">速</text>
-<text x="94" y="286">腳</text>
-<text x="114" y="286">本</text>
-<text x="134" y="286">/</text>
-<text x="144" y="286">原</text>
-<text x="164" y="286">型</text>
-<text x="184" y="286">？</text>
-<text x="64" y="306">P</text>
-<text x="74" y="306">y</text>
-<text x="84" y="306">t</text>
-<text x="94" y="306">h</text>
-<text x="104" y="306">o</text>
-<text x="114" y="306">n</text>
-<text x="124" y="306">（</text>
-<text x="144" y="306">注</text>
-<text x="164" y="306">意</text>
-<text x="194" y="306">G</text>
-<text x="204" y="306">I</text>
-<text x="214" y="306">L</text>
-<text x="234" y="306">限</text>
-<text x="254" y="306">制</text>
-<text x="274" y="306">）</text>
-</g>
-</svg>
-</div>
+<pre><code class="language-flowchart">st=&gt;start: 示意圖
+n1=&gt;operation: 需要多核 CPU 並行運算？\n  ├─ 是 → C/C++/Rust/Go（Python 用 multiprocessing）\n  └─ 否（I/O 密集）→ 各語言都行，Python asyncio 亦可\n　\n需要極低延遲無 GC？\n  └─ C/C++/Rust
+n2=&gt;operation: 　\n需要記憶體安全無 data race 編譯期保證？\n  └─ Rust\n　\n需要最簡單的並發模型？\n  └─ Go（goroutine + channel）
+n3=&gt;operation: 　\n需要快速腳本/原型？\n  └─ Python（注意 GIL 限制）
+st-&gt;n1
+n1-&gt;n2
+n2-&gt;n3
+</code></pre>
 
                     </main>
 
@@ -503,6 +296,7 @@ with lock:                        # 安全的複合操作
         <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
+        <script src="theme/flowchart-init.js"></script>
 
 
 
