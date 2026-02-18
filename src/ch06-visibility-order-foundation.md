@@ -1,0 +1,603 @@
+# 第6章 可見性與有序性底層
+
+## 6.1 多級快取（對應 6.1.1~6.1.3）
+
+<!-- subsection-diagram -->
+### 本小節示意圖（ASCII）
+
+```text
+  多核 CPU 多級快取延遲金字塔
+  ════════════════════════════════════════════════════════
+
+           ┌─────────────────────────────────────┐
+           │           CPU Die                   │
+           │                                     │
+           │  ┌──────────┐    ┌──────────┐       │
+           │  │  Core 0  │    │  Core 1  │       │
+           │  │          │    │          │       │
+           │  │ ┌──────┐ │    │ ┌──────┐ │       │
+           │  │ │  L1  │ │    │ │  L1  │ │       │
+           │  │ │32-64K│ │    │ │32-64K│ │       │
+           │  │ │~4 cy │ │    │ │~4 cy │ │       │
+           │  │ └──┬───┘ │    │ └──┬───┘ │       │
+           │  │   │     │    │    │     │       │
+           │  │ ┌──▼───┐ │    │ ┌──▼───┐ │       │
+           │  │ │  L2  │ │    │ │  L2  │ │       │
+           │  │ │256K  │ │    │ │256K  │ │       │
+           │  │ │~12 cy│ │    │ │~12 cy│ │       │
+           │  │ └──┬───┘ │    │ └──┬───┘ │       │
+           │  └────┼─────┘    └────┼─────┘       │
+           │       │               │             │
+           │       └───────┬───────┘             │
+           │            ┌──▼───┐                 │
+           │            │  L3  │  共享快取        │
+           │            │ 8-32M│                 │
+           │            │~40 cy│                 │
+           │            └──┬───┘                 │
+           └───────────────┼─────────────────────┘
+                           │
+                        ┌──▼───────┐
+                        │   RAM    │  主記憶體
+                        │  GB 級   │
+                        │ ~200 cy  │
+                        └──┬───────┘
+                           │
+                        ┌──▼───────┐
+                        │   磁碟   │  持久儲存
+                        │  TB 級   │
+                        │~10M cy   │
+                        └──────────┘
+
+  存取延遲對比（越往下越慢）：
+  ┌──────────────┬──────────────┬────────────────────────┐
+  │ 快取層級     │ 存取延遲     │ 說明                   │
+  ├──────────────┼──────────────┼────────────────────────┤
+  │ L1 Cache     │    ~4 cycles │ 每核私有，最快         │
+  │ L2 Cache     │   ~12 cycles │ 每核私有，較大         │
+  │ L3 Cache     │   ~40 cycles │ 多核共享               │
+  │ RAM          │  ~200 cycles │ 通過記憶體匯流排存取   │
+  │ SSD          │  ~100K cycles│ NVMe 介面              │
+  │ HDD/磁碟     │  ~10M cycles │ 機械旋轉延遲           │
+  └──────────────┴──────────────┴────────────────────────┘
+
+  ⚠ 重點：Core0 修改的資料在 L1/L2 中，Core1 可能看到舊值
+           必須靠快取一致性協議保證多副本同步
+```
+
+L1/L2/L3 讓 CPU 讀寫更快，但也帶來多副本一致性問題。
+
+## 6.2 快取一致性（對應 6.2.1~6.2.5）
+
+<!-- subsection-diagram -->
+### 本小節示意圖（ASCII）
+
+```text
+  MESI 協議四狀態轉換圖
+  ════════════════════════════════════════════════════════
+
+  狀態定義：
+  ┌─────────────┬──────────────────────────────────────┐
+  │ M (Modified)│ 本核修改過，其他核無副本，與 RAM 不同 │
+  │ E (Exclusive)│ 本核獨有，與 RAM 相同，無其他副本   │
+  │ S (Shared)  │ 多核共有，與 RAM 相同                │
+  │ I (Invalid) │ 快取行無效，需重新從其他核/RAM 取    │
+  └─────────────┴──────────────────────────────────────┘
+
+  狀態機轉換：
+                      ┌─────────────────┐
+              本核讀命中 ◄─┤  E (Exclusive)  ├─► 本核寫命中
+              不需總線操作  └────────┬────────┘   M (Modified)
+                                    │
+                          其他核讀（Bus Read）
+                                    │ 降級共享
+                                    ▼
+  ┌──────────────┐         ┌────────────────┐
+  │ M (Modified) │         │  S (Shared)    │
+  │              │◄────────│                │
+  │ 本核寫：不需  │  本核寫   │ 多核可同時持有  │
+  │ 總線操作      │  發送    │ 只能讀，不能寫  │
+  └──────┬───────┘ Invalidate└───────┬────────┘
+         │        給其他核           │
+         │ 其他核讀時                 │ 所有核清除或被替換
+         │ 回寫 RAM + 降為 S         │
+         ▼                           ▼
+  ┌──────────────────────────────────────────┐
+  │              I (Invalid)                 │
+  │         快取行無效，需要重新載入          │
+  └──────────────────────────────────────────┘
+
+  Core0 寫入流程（從 S → M，令 Core1 失效）：
+  ┌─────────────────────────────────────────────────────┐
+  │  時間                                               │
+  │   │                                                 │
+  │   │  1. Core0 和 Core1 都持有 x=10（S 狀態）        │
+  │   │     Core0 L1: [x=10, S]   Core1 L1: [x=10, S] │
+  │   │                                                 │
+  │   │  2. Core0 寫入 x=20                             │
+  │   │     Core0 發送 BusUpgr（Invalidate）給 Core1   │
+  │   │     ─────────────────────────────────────────► │
+  │   │     Core1 L1: [x=10, I]  ← 標記無效            │
+  │   │     Core0 L1: [x=20, M]  ← 獨占修改            │
+  │   │                                                 │
+  │   │  3. Core1 之後讀 x                              │
+  │   │     發現是 I（Invalid），發出 BusMiss           │
+  │   │     Core0 攔截，回寫 x=20 到 RAM               │
+  │   │     Core1 從 RAM 讀 x=20（S 狀態）              │
+  │   ▼                                                 │
+  └─────────────────────────────────────────────────────┘
+```
+
+MESI 等協議保證核心間最終一致。
+
+## 6.3 偽共享（對應 6.3.1~6.3.3）
+
+<!-- subsection-diagram -->
+### 本小節示意圖（ASCII）
+
+```text
+  偽共享（False Sharing）問題示意
+  ════════════════════════════════════════════════════════
+
+  問題：x 和 y 落在同一個 64-byte 快取行
+
+  記憶體布局：
+  ┌────────────────────────────────────────────────────┐
+  │              64-byte Cache Line                    │
+  │  ┌──────────┬──────────┬──────────────────────┐   │
+  │  │  x (8B)  │  y (8B)  │   padding...  (48B)  │   │
+  │  │  addr 0  │  addr 8  │   addr 16~63         │   │
+  │  └──────────┴──────────┴──────────────────────┘   │
+  └────────────────────────────────────────────────────┘
+        ↑                ↑
+    Core0 寫 x       Core1 寫 y
+
+  結果（每次寫都會使對方快取行失效）：
+  ┌──────────────────────────────────────────────────┐
+  │  Core0 寫 x=1                                    │
+  │    → 整條 64B Cache Line 變 M 狀態               │
+  │    → 發 Invalidate 給 Core1                      │
+  │    → Core1 的 y 雖然沒動，快取行也失效！          │
+  │                                                  │
+  │  Core1 要讀/寫 y                                 │
+  │    → Cache Miss（因為被 Core0 的寫 x 連帶失效）  │
+  │    → 必須等 Core0 回寫，再從 RAM 重新載入        │
+  │    → 效能劇烈下降（可能慢 10~100 倍）            │
+  └──────────────────────────────────────────────────┘
+
+  解法 1：填充（Padding）讓 x 和 y 各占獨立快取行
+  ┌────────────────────────────────────────────────────┐
+  │   Cache Line 0 (64B)    │   Cache Line 1 (64B)    │
+  │  ┌──────┬─────────────┐ │ ┌──────┬─────────────┐  │
+  │  │  x   │ padding 56B │ │ │  y   │ padding 56B │  │
+  │  └──────┴─────────────┘ │ └──────┴─────────────┘  │
+  │       Core0 操作         │      Core1 操作          │
+  └────────────────────────────────────────────────────┘
+  Core0 修改 x → 只影響 Cache Line 0，不影響 Core1
+
+  解法 2：編譯器對齊屬性
+  C：    __attribute__((aligned(64))) int x;
+  C++：  alignas(64) int x;
+  Rust： #[repr(align(64))] struct PaddedCell { val: i64 }
+  Go：   使用 atomic + 手動補位元組到 64B
+```
+
+不同變數落在同一 cache line，互相拖慢。
+
+## 6.4 volatile 類語義（對應 6.4.1~6.4.3）
+
+<!-- subsection-diagram -->
+### 本小節示意圖（ASCII）
+
+```text
+  volatile 可見性語義：寫前 StoreStore + 讀後 LoadLoad
+  ════════════════════════════════════════════════════════
+
+  Thread 1 (Writer)                Thread 2 (Reader)
+  ──────────────────               ─────────────────────
+  write data = 42          │       read result = flag
+                           │
+  ┌─ StoreStore Fence ──┐  │       ┌─ LoadLoad Fence ──┐
+  │  確保 data 寫入先    │  │       │  確保 flag 讀出後  │
+  │  於 flag 寫入可見    │  │       │  才讀 data        │
+  └─────────────────────┘  │       └───────────────────┘
+           │               │                │
+           ▼               │                ▼
+  write flag = true        │       if flag == true:
+  （volatile write）       │           use data  ← 保證看到 42
+           │               │
+           └──── 可見性保證（flush store buffer）──────►
+
+  volatile 的保證與限制：
+  ┌─────────────────────────────────────────────────────┐
+  │  ✅ 保證：每次讀都從主記憶體/快取一致視圖讀取        │
+  │  ✅ 保證：每次寫都立即刷新到主記憶體               │
+  │  ✅ 保證：寫操作對其他執行緒可見（happens-before）  │
+  │                                                     │
+  │  ❌ 不保證：複合操作原子性                          │
+  │     volatile int v = 0;                             │
+  │     v++;  // 等同 v = v + 1，read-modify-write      │
+  │            // 兩個執行緒各自讀 0，都寫 1 → 遺失更新 │
+  └─────────────────────────────────────────────────────┘
+
+  四種語言的 volatile 對應：
+  ┌──────────┬─────────────────────────────────────────┐
+  │ 語言     │ volatile / 可見性 API                   │
+  ├──────────┼─────────────────────────────────────────┤
+  │ C/C++    │ volatile（只阻止編譯器重排，非執行緒安全）│
+  │          │ atomic_store/load（正確做法）            │
+  │ Rust     │ AtomicXxx::store/load(Ordering)          │
+  │ Go       │ sync/atomic.Store/Load                  │
+  └──────────┴─────────────────────────────────────────┘
+```
+
+可見性強，但不保證複合操作原子性。
+
+## 6.5 指令重排與屏障（對應 6.5.1~6.5.4）
+
+<!-- subsection-diagram -->
+### 本小節示意圖（ASCII）
+
+```text
+  四種記憶體屏障（Memory Fence）類型
+  ════════════════════════════════════════════════════════
+
+  屏障阻止跨越屏障的重排序（時間從上到下）：
+
+  ┌─────────────────┬──────────────────────────────────┐
+  │  LoadLoad        │  確保屏障前的 Load 先於後面的 Load│
+  │                  │                                  │
+  │  load A          │  ─────── 屏障上方 ───────        │
+  │  ── LL Fence ──  │  ══════════════════════════════  │
+  │  load B          │  ─────── 屏障下方 ───────        │
+  │  保證 A 先於 B   │  A 的結果對下方 Load 可見        │
+  └─────────────────┴──────────────────────────────────┘
+
+  ┌─────────────────┬──────────────────────────────────┐
+  │  LoadStore       │  確保屏障前的 Load 先於後面的Store│
+  │                  │                                  │
+  │  load A          │  通常用於避免載入後的寫被提前    │
+  │  ── LS Fence ──  │                                  │
+  │  store B         │                                  │
+  └─────────────────┴──────────────────────────────────┘
+
+  ┌─────────────────┬──────────────────────────────────┐
+  │  StoreStore      │  確保屏障前的 Store 先於後面Store │
+  │                  │                                  │
+  │  store A         │  ─────── 屏障上方 ───────        │
+  │  ── SS Fence ──  │  ══════════════════════════════  │
+  │  store B         │  ─────── 屏障下方 ───────        │
+  │  保證 A 先寫出   │  A 對其他核的可見先於 B           │
+  └─────────────────┴──────────────────────────────────┘
+
+  ┌─────────────────┬──────────────────────────────────┐
+  │  StoreLoad       │  最重的屏障，確保前面 Store 對所有│
+  │  （全屏障）      │  核可見後，才執行後面的 Load      │
+  │                  │                                  │
+  │  store A         │  必須刷新 Store Buffer + 清空    │
+  │  ── SL Fence ──  │  Invalidate Queue               │
+  │  load B          │  代價最高，x86 用 MFENCE        │
+  └─────────────────┴──────────────────────────────────┘
+
+  Acquire / Release 語義包含的 Fence：
+
+  Release（寫端）：          Acquire（讀端）：
+  ┌──────────────────┐       ┌──────────────────┐
+  │  普通寫操作       │       │  acquire load    │
+  │  普通寫操作       │       │                  │
+  │  ─ SS Fence ──   │       │  ─ LL + LS ──    │
+  │  ─ LS Fence ──   │       │    Fence          │
+  │  release store   │       │                  │
+  └──────────────────┘       │  普通讀操作       │
+  保證 release 前的寫         └──────────────────┘
+  在 release store 之前可見   保證 acquire 後的讀
+                              在 acquire load 之後
+```
+
+Memory Fence 阻止特定方向的重排。
+
+## 6.6 記憶體模型（對應 6.6.1~6.6.3）
+
+<!-- subsection-diagram -->
+### 本小節示意圖（ASCII）
+
+```text
+  各語言記憶體模型與同步 API 對比
+  ════════════════════════════════════════════════════════
+
+  ┌──────────┬──────────────────┬─────────────────────────────────────┐
+  │ 語言     │ 記憶體模型        │ 同步操作 API / 保證                  │
+  ├──────────┼──────────────────┼─────────────────────────────────────┤
+  │ C11/C17  │ C11 Memory Model │ atomic_store(relaxed/release/seq_cst)│
+  │          │ 弱序 + 顯式標注   │ atomic_load(relaxed/acquire/seq_cst) │
+  │          │                  │ atomic_thread_fence(memory_order_*)  │
+  ├──────────┼──────────────────┼─────────────────────────────────────┤
+  │ C++11+   │ C++ Memory Model │ std::atomic<T>::store(memory_order)  │
+  │          │ 與 C11 相近      │ std::atomic<T>::load(memory_order)   │
+  │          │                  │ memory_order_{relaxed,acquire,       │
+  │          │                  │   release,acq_rel,seq_cst}           │
+  ├──────────┼──────────────────┼─────────────────────────────────────┤
+  │ Rust     │ C++ 相容         │ AtomicI32::store(val, Ordering::*)   │
+  │          │ 型別系統強制      │ AtomicI32::load(Ordering::*)         │
+  │          │ 所有權排除競爭    │ Ordering::{Relaxed,Acquire,          │
+  │          │                  │   Release,AcqRel,SeqCst}             │
+  ├──────────┼──────────────────┼─────────────────────────────────────┤
+  │ Go       │ Go Memory Model  │ sync/atomic.Store/Load               │
+  │          │ 較簡單，happens- │ sync.Mutex / sync.RWMutex            │
+  │          │ before 為主      │ channel send/recv（天然同步點）       │
+  │          │                  │ 無顯式 memory_order 選擇             │
+  └──────────┴──────────────────┴─────────────────────────────────────┘
+
+  強弱排序光譜：
+  弱序（性能高，推理難）                    強序（性能低，推理易）
+  ────────────────────────────────────────────────────────►
+  Relaxed        Acquire/Release       SeqCst（全序）
+  （無同步）      （happens-before）    （全局一致順序）
+  僅原子性        producer-consumer     計數器、旗標
+```
+
+Java、C++、Rust、Go 都定義了跨執行緒可見性規則。
+
+## 6.7 happens-before（對應 6.7.1~6.7.9）
+
+<!-- subsection-diagram -->
+### 本小節示意圖（ASCII）
+
+```text
+  happens-before（HB）傳遞鏈示意
+  ════════════════════════════════════════════════════════
+
+  執行緒 T1                     執行緒 T2
+  ──────────────────            ──────────────────
+  data = 42           ─── HB ──► (HB 傳遞)
+      │ HB（程式順序）           │
+  unlock(L)           ═══ HB ══► lock(L)
+                                 │ HB（程式順序）
+                                read data → 42 ✅
+
+  HB 鏈推導：
+  ┌─────────────────────────────────────────────────────┐
+  │  data = 42                                          │
+  │      │ HB（T1 程式順序：先寫 data 再 unlock）        │
+  │      ▼                                              │
+  │  unlock(L)                                          │
+  │      │ HB（同步動作：unlock HB lock 同一把鎖）       │
+  │      ▼                                              │
+  │  lock(L)   ← T2 獲取同一把鎖                        │
+  │      │ HB（T2 程式順序：先 lock 再讀 data）          │
+  │      ▼                                              │
+  │  read data → 保證看到 42（HB 具傳遞性）              │
+  └─────────────────────────────────────────────────────┘
+
+  建立 happens-before 的常見同步事件：
+  ┌──────────────────────────────────────────────────────┐
+  │  同步事件                  HB 關係                   │
+  ├──────────────────────────────────────────────────────┤
+  │  unlock(L)           HB    lock(L)（同一鎖）         │
+  │  volatile write      HB    volatile read（後發生）   │
+  │  thread.start()      HB    執行緒內第一個動作         │
+  │  執行緒最後動作       HB    thread.join() 返回        │
+  │  channel send        HB    channel recv（Go）        │
+  │  release store       HB    acquire load（C++/Rust）  │
+  └──────────────────────────────────────────────────────┘
+
+  HB 具有傳遞性：若 A HB B 且 B HB C，則 A HB C
+  ┌───┐  HB  ┌───┐  HB  ┌───┐
+  │ A │─────►│ B │─────►│ C │   則 A HB C
+  └───┘      └───┘      └───┘
+```
+
+能建立 happens-before 的同步事件，才可推導正確性。
+
+```text
+unlock(L) happens-before lock(L)
+write(x) in T1 before unlock -> T2 lock 後可見
+```
+
+## 示意圖
+
+```text
+Core0 write -> StoreBuffer -> L1 -> L2/L3 -> Core1 read
+需要一致性協議 + memory order 才能正確觀察
+```
+
+## 跨語言完整範例
+
+主題：release-acquire 語義傳遞數據（producer 設 data 後 release store flag，consumer acquire load flag 後讀 data）
+
+### C（C11 atomics）
+
+```c
+// 編譯：gcc -std=c11 -pthread -o ch06_c ch06.c
+#include <stdatomic.h>
+#include <pthread.h>
+#include <stdio.h>
+
+static int data = 0;
+static atomic_int flag = ATOMIC_VAR_INIT(0);
+
+void *producer(void *arg) {
+    data = 42;                                          // 普通寫
+    atomic_store_explicit(&flag, 1, memory_order_release); // release
+    return NULL;
+}
+
+void *consumer(void *arg) {
+    int f;
+    while ((f = atomic_load_explicit(&flag, memory_order_acquire)) == 0)
+        ;                                               // spin acquire
+    printf("consumer: data = %d (expected 42)\n", data);
+    return NULL;
+}
+
+int main(void) {
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, consumer, NULL);
+    pthread_create(&t2, NULL, producer, NULL);
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    return 0;
+}
+```
+
+### C++（std::atomic release/acquire）
+
+```cpp
+// 編譯：g++ -std=c++17 -pthread -o ch06_cpp ch06.cpp
+#include <atomic>
+#include <thread>
+#include <iostream>
+
+static int data = 0;
+static std::atomic<int> flag{0};
+
+void producer() {
+    data = 42;                                          // 普通寫
+    flag.store(1, std::memory_order_release);           // release store
+}
+
+void consumer() {
+    while (flag.load(std::memory_order_acquire) == 0)  // acquire load
+        ;                                               // spin
+    std::cout << "consumer: data = " << data
+              << " (expected 42)\n";
+}
+
+int main() {
+    std::thread t1(consumer);
+    std::thread t2(producer);
+    t1.join();
+    t2.join();
+}
+```
+
+### Rust（Atomic release/acquire）
+
+```rust
+// 執行：cargo run 或 rustc ch06.rs && ./ch06
+use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::Arc;
+use std::thread;
+
+fn main() {
+    let data = Arc::new(AtomicI32::new(0));
+    let flag = Arc::new(AtomicI32::new(0));
+
+    let (d2, f2) = (Arc::clone(&data), Arc::clone(&flag));
+    let producer = thread::spawn(move || {
+        d2.store(42, Ordering::Relaxed);               // 普通原子寫
+        f2.store(1, Ordering::Release);                // release store
+    });
+
+    let (d1, f1) = (Arc::clone(&data), Arc::clone(&flag));
+    let consumer = thread::spawn(move || {
+        while f1.load(Ordering::Acquire) == 0 {}       // acquire load spin
+        println!("consumer: data = {} (expected 42)",
+                 d1.load(Ordering::Relaxed));
+    });
+
+    producer.join().unwrap();
+    consumer.join().unwrap();
+}
+```
+
+### Go（sync/atomic + channel 同步）
+
+```go
+// 執行：go run ch06.go
+package main
+
+import (
+	"fmt"
+	"sync/atomic"
+)
+
+var data int64
+var flag atomic.Int32
+
+func main() {
+	done := make(chan struct{})
+
+	go func() { // consumer
+		for flag.Load() == 0 { // acquire-like（Go atomic 隱含 seq_cst）
+		}
+		val := atomic.LoadInt64(&data)
+		fmt.Printf("consumer: data = %d (expected 42)\n", val)
+		close(done)
+	}()
+
+	go func() { // producer
+		atomic.StoreInt64(&data, 42)
+		flag.Store(1) // release-like
+	}()
+
+	<-done
+}
+```
+
+### Python（threading.Condition 模擬 release/acquire）
+
+```python
+# 執行：python3 ch06.py
+import threading
+
+data = 0
+flag = False
+cv = threading.Condition()
+
+def producer():
+    global data, flag
+    with cv:
+        data = 42       # 設定 payload
+        flag = True     # release：通知 consumer
+        cv.notify_all()
+
+def consumer():
+    with cv:
+        while not flag: # acquire：等待 flag
+            cv.wait()
+        print(f"consumer: data = {data} (expected 42)")
+
+if __name__ == "__main__":
+    t1 = threading.Thread(target=consumer)
+    t2 = threading.Thread(target=producer)
+    t1.start(); t2.start()
+    t1.join(); t2.join()
+```
+
+## 完整專案級範例（Python）
+
+檔案：`examples/python/ch06.py`
+
+```bash
+python3 examples/python/ch06.py
+```
+
+```python
+"""Chapter 06: ordering with condition variable."""
+import threading
+
+cv = threading.Condition()
+ready = False
+payload = 0
+
+
+def producer():
+    global ready, payload
+    with cv:
+        payload = 99
+        ready = True
+        cv.notify_all()
+
+
+def consumer():
+    with cv:
+        while not ready:
+            cv.wait()
+        print("payload=", payload)
+
+
+if __name__ == "__main__":
+    t1 = threading.Thread(target=consumer)
+    t2 = threading.Thread(target=producer)
+    t1.start(); t2.start(); t1.join(); t2.join()
+```

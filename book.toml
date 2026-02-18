@@ -1,0 +1,14 @@
+[book]
+title = "高並發編程通用概念（跨 Java/C++/Rust/Go）"
+authors = ["Shihyu + Codex"]
+language = "zh-TW"
+multilingual = false
+src = "src"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+mathjax-support = false
