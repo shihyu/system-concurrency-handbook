@@ -1,0 +1,848 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>第9章 Lock 家族 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">高並發編程通用概念（跨 Java/C++/Rust/Go）</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="第9章-lock-家族"><a class="header" href="#第9章-lock-家族">第9章 Lock 家族</a></h1>
+<h2 id="91-顯式鎖"><a class="header" href="#91-顯式鎖">9.1 顯式鎖</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  顯式鎖三種獲取路徑對比
+  ════════════════════════════════════════════════════════
+
+  lock()：無限等待，不可中斷
+  ┌──────────────────────────────────────────────────────┐
+  │  thread.lock()                                       │
+  │       │                                              │
+  │       ▼                                              │
+  │  嘗試獲取鎖 ─── 成功 ──► 進入臨界區                 │
+  │       │                                              │
+  │       │ 失敗（鎖被佔用）                             │
+  │       ▼                                              │
+  │  park()（永久等待）                                  │
+  │  ⚠ 即使收到 interrupt()，仍然繼續等待               │
+  │  只有鎖被釋放後才被 unpark 喚醒                      │
+  │  優點：簡單   缺點：可能永久阻塞                     │
+  └──────────────────────────────────────────────────────┘
+
+  tryLock(timeout)：超時等待
+  ┌──────────────────────────────────────────────────────┐
+  │  lock = thread.tryLock(1, TimeUnit.SECONDS)          │
+  │       │                                              │
+  │       ▼                                              │
+  │  嘗試獲取鎖 ─── 成功 ──► 進入臨界區                 │
+  │       │                                              │
+  │       │ 失敗，記錄 deadline                          │
+  │       ▼                                              │
+  │  park(timeout)                                       │
+  │  ┌─────────────────────────────────────────────┐    │
+  │  │  等待期間：                                  │    │
+  │  │  ├─ 被喚醒（鎖釋放）→ 重試 tryLock          │    │
+  │  │  ├─ 超時      → 返回 false，不進臨界區      │    │
+  │  │  └─ interrupt → 拋 InterruptedException     │    │
+  │  └─────────────────────────────────────────────┘    │
+  │  優點：避免永久阻塞   缺點：需處理返回值             │
+  └──────────────────────────────────────────────────────┘
+
+  lockInterruptibly()：可中斷等待
+  ┌──────────────────────────────────────────────────────┐
+  │  thread.lockInterruptibly()                          │
+  │       │                                              │
+  │       ▼                                              │
+  │  嘗試獲取鎖 ─── 成功 ──► 進入臨界區                 │
+  │       │                                              │
+  │       │ 失敗，進入佇列等待                           │
+  │       ▼                                              │
+  │  parkInterruptibly()                                 │
+  │  ┌─────────────────────────────────────────────┐    │
+  │  │  等待期間：                                  │    │
+  │  │  ├─ 被喚醒（鎖釋放）→ 重試獲取              │    │
+  │  │  └─ interrupt → 立即拋 InterruptedException  │    │
+  │  │     從等待佇列移除，不再等待                 │    │
+  │  └─────────────────────────────────────────────┘    │
+  │  優點：可取消   缺點：呼叫者必須處理異常             │
+  └──────────────────────────────────────────────────────┘
+</code></pre>
+<p>比 <code>synchronized</code> 更可控：可中斷、可超時、可嘗試。</p>
+<h2 id="92-公平與非公平對應-921926"><a class="header" href="#92-公平與非公平對應-921926">9.2 公平與非公平（對應 9.2.1~9.2.6）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  公平鎖 vs 非公平鎖競爭示意
+  ════════════════════════════════════════════════════════
+
+  公平鎖（Fair Lock）— 嚴格 FIFO 順序
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  等待佇列：  T2 → T3 → T4（依入隊順序）            │
+  │                                                     │
+  │  T1 釋放鎖                                          │
+  │       │                                             │
+  │       ▼ 只喚醒佇列頭部                              │
+  │  T2 獲取鎖（FIFO 頭部）                             │
+  │                                                     │
+  │  此時 T5 剛好到達：                                  │
+  │  ┌──────────────────────────────────────────────┐   │
+  │  │  T5 發現佇列不空 → 直接入隊尾部（不搶）      │   │
+  │  │  等待佇列：T3 → T4 → T5                      │   │
+  │  └──────────────────────────────────────────────┘   │
+  │                                                     │
+  │  ✅ 優點：無飢餓，等待時間可預期                    │
+  │  ❌ 缺點：每次都要喚醒掛起執行緒（吞吐較低）        │
+  └─────────────────────────────────────────────────────┘
+
+  非公平鎖（Non-Fair Lock）— 先搶再排
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  等待佇列：  T2 → T3 → T4（已在等待）              │
+  │                                                     │
+  │  T1 釋放鎖                                          │
+  │       │                                             │
+  │       ▼ 喚醒佇列頭部 T2，同時...                   │
+  │                                                     │
+  │  此時 T5 剛好到達：                                  │
+  │  ┌──────────────────────────────────────────────┐   │
+  │  │  T5 先嘗試 CAS(state, 0, 1)                  │   │
+  │  │  若 CAS 成功 → T5 直接獲取！（T2 繼續等）    │   │
+  │  │  若 CAS 失敗 → T5 才入隊尾部                 │   │
+  │  └──────────────────────────────────────────────┘   │
+  │                                                     │
+  │  ✅ 優點：減少上下文切換（T5 不必 park/unpark）     │
+  │  ❌ 缺點：佇列中的執行緒可能被後來者插隊（飢餓）    │
+  └─────────────────────────────────────────────────────┘
+
+  效能對比：
+  非公平鎖吞吐量通常比公平鎖高 2~10 倍（視競爭程度）
+  ReentrantLock 預設是非公平鎖
+</code></pre>
+<p>公平降低飢餓但吞吐可能較低；非公平吞吐高但可能插隊。</p>
+<h2 id="93-悲觀與樂觀對應-931934"><a class="header" href="#93-悲觀與樂觀對應-931934">9.3 悲觀與樂觀（對應 9.3.1~9.3.4）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  悲觀鎖 vs 樂觀鎖（CAS）流程對比
+  ════════════════════════════════════════════════════════
+
+  悲觀鎖（Pessimistic Lock）— 假設衝突必然發生
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  ┌──────────┐                                       │
+  │  │  lock()  │← 先鎖定資源（阻塞其他執行緒）        │
+  │  └────┬─────┘                                       │
+  │       │                                             │
+  │       ▼                                             │
+  │  ┌──────────┐                                       │
+  │  │ read data│← 讀取資料（安全，因為已鎖定）         │
+  │  └────┬─────┘                                       │
+  │       │                                             │
+  │       ▼                                             │
+  │  ┌──────────┐                                       │
+  │  │write data│← 修改資料                             │
+  │  └────┬─────┘                                       │
+  │       │                                             │
+  │       ▼                                             │
+  │  ┌──────────┐                                       │
+  │  │ unlock() │← 釋放鎖                               │
+  │  └──────────┘                                       │
+  │                                                     │
+  │  適用：衝突頻率高、臨界區長、寫操作多               │
+  └─────────────────────────────────────────────────────┘
+
+  樂觀鎖（Optimistic Lock）— 假設衝突很少，先做再驗
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  ┌─────────────────────┐                            │
+  │  │ read data + version │← 讀值 + 記版本號（無鎖）  │
+  │  └──────────┬──────────┘                            │
+  │             │                                       │
+  │             ▼                                       │
+  │  ┌─────────────────────┐                            │
+  │  │    compute new val  │← 計算新值（無鎖執行）      │
+  │  └──────────┬──────────┘                            │
+  │             │                                       │
+  │             ▼                                       │
+  │  ┌──────────────────────────────────────────────┐  │
+  │  │  CAS(addr, old_val, new_val)                 │  │
+  │  │      ── 且 ──                                │  │
+  │  │  version 比較（version == old_version）      │  │
+  │  └────────────────┬─────────────────────────────┘  │
+  │                   │                                 │
+  │          ┌────────┴────────┐                        │
+  │          ▼                 ▼                        │
+  │    CAS 成功              CAS 失敗（有衝突）         │
+  │    version++             重新 read + retry          │
+  │    操作完成              ↑─────────────────────┘   │
+  │                                                     │
+  │  適用：衝突頻率低、臨界區短、讀操作多               │
+  └─────────────────────────────────────────────────────┘
+</code></pre>
+<p>衝突高用悲觀鎖，衝突低可走 CAS/版本號。</p>
+<h2 id="94-可中斷對應-941944"><a class="header" href="#94-可中斷對應-941944">9.4 可中斷（對應 9.4.1~9.4.4）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  可中斷等待 vs 不可中斷等待對比
+  ════════════════════════════════════════════════════════
+
+  lock()：不可中斷（忽略 interrupt）
+  ┌──────────────────────────────────────────────────────┐
+  │                                                      │
+  │  Thread T_wait                    Thread T_other     │
+  │  ──────────────                   ──────────────     │
+  │  lock()（鎖被佔用）                                  │
+  │  park()...（掛起等待）                               │
+  │                        ──────►   T_wait.interrupt()  │
+  │  中斷標記設為 true                                   │
+  │  但 lock() 繼續等待！                                │
+  │  ⚠ 不拋異常，繼續 park                             │
+  │  直到鎖釋放才 unpark                                │
+  │  獲取鎖後才能檢查中斷標記                           │
+  │                                                      │
+  └──────────────────────────────────────────────────────┘
+
+  lockInterruptibly()：可中斷
+  ┌──────────────────────────────────────────────────────┐
+  │                                                      │
+  │  Thread T_wait                    Thread T_other     │
+  │  ──────────────                   ──────────────     │
+  │  lockInterruptibly()                                 │
+  │  （鎖被佔用）進入等待佇列                            │
+  │  parkInterruptibly()...                              │
+  │                        ──────►   T_wait.interrupt()  │
+  │  ↓ 被喚醒（因 interrupt）                           │
+  │  拋出 InterruptedException ←───────────────────────  │
+  │  從等待佇列移除                                      │
+  │  執行緒可以執行取消/清理邏輯                         │
+  │                                                      │
+  │  使用場景：可取消的任務、避免死鎖、實作超時          │
+  └──────────────────────────────────────────────────────┘
+</code></pre>
+<p>等待鎖時可取消，避免永久卡死。</p>
+<h2 id="95-獨占共享對應-951954"><a class="header" href="#95-獨占共享對應-951954">9.5 獨占/共享（對應 9.5.1~9.5.4）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-4"><a class="header" href="#本小節示意圖ascii-4">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  獨占鎖 vs 共享鎖 相容矩陣
+  ════════════════════════════════════════════════════════
+
+  ┌──────────────────────┬────────────────┬──────────────┐
+  │                      │  持有讀鎖中    │  持有寫鎖中  │
+  ├──────────────────────┼────────────────┼──────────────┤
+  │  新執行緒申請讀鎖     │  ✅ 允許（共享）│  ❌ 阻塞    │
+  ├──────────────────────┼────────────────┼──────────────┤
+  │  新執行緒申請寫鎖     │  ❌ 阻塞       │  ❌ 阻塞    │
+  └──────────────────────┴────────────────┴──────────────┘
+
+  說明：
+  ┌─────────────────────────────────────────────────────┐
+  │  讀鎖（共享）：                                     │
+  │  • 多個執行緒可同時持有讀鎖                         │
+  │  • 適合唯讀操作，不修改資料                         │
+  │  • 相容性：讀-讀 允許 / 讀-寫 不允許               │
+  │                                                     │
+  │  寫鎖（獨占）：                                     │
+  │  • 只有一個執行緒可持有寫鎖                         │
+  │  • 持有期間排斥所有讀鎖和寫鎖                       │
+  │  • 相容性：寫-讀 不允許 / 寫-寫 不允許             │
+  │                                                     │
+  │  AQS state 編碼（ReadWriteLock）：                  │
+  │  ┌────────────────────────────────────────────┐     │
+  │  │  32-bit state                              │     │
+  │  │  高 16 位：讀鎖計數（讀者數量）            │     │
+  │  │  低 16 位：寫鎖計數（重入次數）            │     │
+  │  └────────────────────────────────────────────┘     │
+  └─────────────────────────────────────────────────────┘
+</code></pre>
+<p>不同資源特性選不同模型。</p>
+<h2 id="96-可重入對應-961962"><a class="header" href="#96-可重入對應-961962">9.6 可重入（對應 9.6.1~9.6.2）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-5"><a class="header" href="#本小節示意圖ascii-5">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  可重入鎖（Reentrant Lock）計數器機制
+  ════════════════════════════════════════════════════════
+
+  場景：T1 持有鎖後呼叫遞迴方法，需要再次獲取同一把鎖
+
+  ┌──────────────────────────────────────────────────────┐
+  │  Thread T1                          state 計數器     │
+  │  ──────────────────                 ─────────────    │
+  │                                                      │
+  │  1. lock()                          state = 0        │
+  │     CAS(state, 0, 1) 成功           state = 1        │
+  │     owner = T1                                       │
+  │     ↓                                                │
+  │  2. 呼叫 methodA()                                   │
+  │     ↓                                                │
+  │  3. lock()（重入）                  state = 1        │
+  │     owner == T1（自己）→ 直接重入   state = 2        │
+  │     recursions++                                     │
+  │     ↓                                                │
+  │  4. 呼叫 methodB()（繼續重入）                       │
+  │     lock()                          state = 2        │
+  │     owner == T1 → 直接重入          state = 3        │
+  │     ↓                                                │
+  │  5. methodB 完成                                     │
+  │     unlock()                        state = 3        │
+  │     recursions--                    state = 2        │
+  │     ↓                                                │
+  │  6. methodA 完成                                     │
+  │     unlock()                        state = 2        │
+  │     recursions--                    state = 1        │
+  │     ↓                                                │
+  │  7. 最外層完成                                       │
+  │     unlock()                        state = 1        │
+  │     state = 0，owner = null         state = 0 ✅     │
+  │     喚醒等待的執行緒                                  │
+  │                                                      │
+  │  ⚠ 若不可重入：步驟 3 會死鎖（等自己釋放鎖）        │
+  └──────────────────────────────────────────────────────┘
+</code></pre>
+<p>同執行緒可重複拿同一把鎖，靠計數器解決遞迴鎖死。</p>
+<h2 id="97-讀寫鎖對應-971976"><a class="header" href="#97-讀寫鎖對應-971976">9.7 讀寫鎖（對應 9.7.1~9.7.6）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-6"><a class="header" href="#本小節示意圖ascii-6">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  讀寫鎖時間軸示意
+  ════════════════════════════════════════════════════════
+
+  時間軸（從左到右）：
+  ─────────────────────────────────────────────────────►
+
+  R1: ████████████████████████                  ← 讀者1
+  R2:       ████████████████████████            ← 讀者2（與R1並發）
+  R3:             ████████████████████████      ← 讀者3（與R1/R2並發）
+
+  W1:                              ░░░░░░████   ← 寫者1（等待R1/R2/R3結束）
+                                   等待  ↑ 進入臨界區
+
+  R4: （W1 等待期間到來）          ░░░░░░░░████ ← 可能被 W1 擋住（防寫者飢餓）
+  R5:                                    ░░░████← W1 完成後 R4/R5 可進入
+
+  規則：
+  ┌─────────────────────────────────────────────────────┐
+  │  ✅ 多個讀者同時進入（無寫者時）                    │
+  │  ✅ 寫者獨占（進入時排除所有讀者和其他寫者）        │
+  │  ⚠  寫者等待所有現有讀者完成才能進入               │
+  │  ⚠  有等待寫者時，新讀者可能被阻止（防飢餓策略）   │
+  └─────────────────────────────────────────────────────┘
+
+  狀態轉換：
+  ┌────────────────┬───────────────┬──────────────────────┐
+  │  當前狀態      │ 申請讀鎖      │ 申請寫鎖             │
+  ├────────────────┼───────────────┼──────────────────────┤
+  │  無鎖          │ 立即獲取      │ 立即獲取             │
+  │  讀鎖（1+個）  │ 立即獲取      │ 阻塞等待所有讀者退出 │
+  │  寫鎖（1個）   │ 阻塞等待      │ 阻塞（除非重入）     │
+  └────────────────┴───────────────┴──────────────────────┘
+</code></pre>
+<p>讀多寫少場景常見，讀可併發、寫需獨占。</p>
+<h2 id="98-parkunpark對應-981982"><a class="header" href="#98-parkunpark對應-981982">9.8 park/unpark（對應 9.8.1~9.8.2）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-7"><a class="header" href="#本小節示意圖ascii-7">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  LockSupport.park / unpark 原語
+  ════════════════════════════════════════════════════════
+
+  執行緒狀態轉換：
+
+  Thread T
+  ─────────────────────────────────────────────────────
+  RUNNABLE
+      │
+      │ LockSupport.park()
+      ▼
+  WAITING ← 執行緒掛起，不消耗 CPU
+  （操作系統層面：futex/pthread_cond_wait）
+      │
+      │ LockSupport.unpark(T)  ← 任意執行緒可呼叫
+      ▼
+  RUNNABLE ← 繼續執行 park() 之後的程式碼
+
+  park / unpark 特殊語義（permit 模型）：
+  ┌─────────────────────────────────────────────────────┐
+  │  每個執行緒有一個「permit」（0 或 1）               │
+  │                                                     │
+  │  unpark(T)：                                        │
+  │  • 若 T 在等待 → 立即喚醒 T，permit 保持 0         │
+  │  • 若 T 未等待 → permit 設為 1（預存）              │
+  │                                                     │
+  │  park()：                                           │
+  │  • 若 permit = 1 → 立即返回（消耗 permit 設為 0）  │
+  │  • 若 permit = 0 → 掛起等待                        │
+  │                                                     │
+  │  結果：unpark 可以在 park 之前呼叫，不會丟失喚醒信號│
+  └─────────────────────────────────────────────────────┘
+
+  與 wait/notify 對比：
+  ┌───────────────────┬─────────────────┬───────────────┐
+  │ 特性              │ wait/notify     │ park/unpark   │
+  ├───────────────────┼─────────────────┼───────────────┤
+  │ 需要鎖            │ 是（必須在      │ 否（任何地方  │
+  │                   │ synchronized 中）│ 都可呼叫）    │
+  │ 喚醒特定執行緒    │ 否（notify 隨機）│ 是（指定 T）  │
+  │ 先喚醒後等待      │ 信號丟失        │ permit 保存   │
+  │ 虛假喚醒         │ 需要 while 迴圈 │ 也需要檢查    │
+  └───────────────────┴─────────────────┴───────────────┘
+</code></pre>
+<p>底層掛起/喚醒原語。</p>
+<h2 id="示意圖"><a class="header" href="#示意圖">示意圖</a></h2>
+<pre><code class="language-text">讀寫鎖:
+Readers: R1 R2 R3 可同時進
+Writer : W 需要獨占，等所有 Reader 離開
+</code></pre>
+<h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
+<p>主題：讀寫鎖保護 map（3 個 reader 並發讀，1 個 writer 定期寫）</p>
+<h3 id="cpthread_rwlock"><a class="header" href="#cpthread_rwlock">C（pthread_rwlock）</a></h3>
+<pre><code class="language-c">// 編譯：gcc -std=c11 -pthread -o ch09_c ch09.c
+#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+
+#define READERS 3
+
+static int shared_data = 0;
+static pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+
+void *reader(void *arg) {
+    int id = *(int *)arg;
+    for (int i = 0; i &lt; 3; i++) {
+        pthread_rwlock_rdlock(&amp;rwlock);       // 讀鎖（多讀者可並發）
+        printf("reader %d: data = %d\n", id, shared_data);
+        usleep(20000);
+        pthread_rwlock_unlock(&amp;rwlock);
+        usleep(10000);
+    }
+    return NULL;
+}
+
+void *writer(void *arg) {
+    for (int i = 1; i &lt;= 3; i++) {
+        usleep(30000);
+        pthread_rwlock_wrlock(&amp;rwlock);       // 寫鎖（獨占）
+        shared_data = i * 10;
+        printf("writer: data set to %d\n", shared_data);
+        pthread_rwlock_unlock(&amp;rwlock);
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t readers[READERS], wr;
+    int ids[READERS];
+    for (int i = 0; i &lt; READERS; i++) {
+        ids[i] = i;
+        pthread_create(&amp;readers[i], NULL, reader, &amp;ids[i]);
+    }
+    pthread_create(&amp;wr, NULL, writer, NULL);
+    for (int i = 0; i &lt; READERS; i++) pthread_join(readers[i], NULL);
+    pthread_join(wr, NULL);
+    pthread_rwlock_destroy(&amp;rwlock);
+    return 0;
+}
+</code></pre>
+<h3 id="cstdshared_mutex"><a class="header" href="#cstdshared_mutex">C++（std::shared_mutex）</a></h3>
+<pre><code class="language-cpp">// 編譯：g++ -std=c++17 -pthread -o ch09_cpp ch09.cpp
+#include &lt;shared_mutex&gt;
+#include &lt;thread&gt;
+#include &lt;chrono&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+static int shared_data = 0;
+static std::shared_mutex rw;
+
+void reader(int id) {
+    for (int i = 0; i &lt; 3; i++) {
+        std::shared_lock lock(rw);            // 共享讀鎖
+        std::cout &lt;&lt; "reader " &lt;&lt; id &lt;&lt; ": data = " &lt;&lt; shared_data &lt;&lt; "\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+}
+
+void writer() {
+    for (int i = 1; i &lt;= 3; i++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        std::unique_lock lock(rw);            // 獨占寫鎖
+        shared_data = i * 10;
+        std::cout &lt;&lt; "writer: data set to " &lt;&lt; shared_data &lt;&lt; "\n";
+    }
+}
+
+int main() {
+    std::vector&lt;std::thread&gt; threads;
+    for (int i = 0; i &lt; 3; i++)
+        threads.emplace_back(reader, i);
+    threads.emplace_back(writer);
+    for (auto &amp;t : threads) t.join();
+}
+</code></pre>
+<h3 id="rustrwlock"><a class="header" href="#rustrwlock">Rust（RwLock<i32>）</a></h3>
+<pre><pre class="playground"><code class="language-rust">// 執行：cargo run 或 rustc ch09.rs &amp;&amp; ./ch09
+use std::sync::{Arc, RwLock};
+use std::thread;
+use std::time::Duration;
+
+fn main() {
+    let data = Arc::new(RwLock::new(0i32));
+    let mut handles = Vec::new();
+
+    // 3 個讀者
+    for id in 0..3 {
+        let data = Arc::clone(&amp;data);
+        handles.push(thread::spawn(move || {
+            for _ in 0..3 {
+                let val = data.read().unwrap();  // 共享讀鎖
+                println!("reader {}: data = {}", id, *val);
+                drop(val);
+                thread::sleep(Duration::from_millis(10));
+            }
+        }));
+    }
+
+    // 1 個寫者
+    let data = Arc::clone(&amp;data);
+    handles.push(thread::spawn(move || {
+        for i in 1..=3 {
+            thread::sleep(Duration::from_millis(30));
+            *data.write().unwrap() = i * 10;    // 獨占寫鎖
+            println!("writer: data set to {}", i * 10);
+        }
+    }));
+
+    for h in handles { h.join().unwrap(); }
+}</code></pre></pre>
+<h3 id="gosyncrwmutex"><a class="header" href="#gosyncrwmutex">Go（sync.RWMutex）</a></h3>
+<pre><code class="language-go">// 執行：go run ch09.go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+var (
+	sharedData int
+	rw         sync.RWMutex
+)
+
+func reader(id int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := 0; i &lt; 3; i++ {
+		rw.RLock()                              // 共享讀鎖
+		fmt.Printf("reader %d: data = %d\n", id, sharedData)
+		time.Sleep(20 * time.Millisecond)
+		rw.RUnlock()
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+func writer(wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := 1; i &lt;= 3; i++ {
+		time.Sleep(30 * time.Millisecond)
+		rw.Lock()                               // 獨占寫鎖
+		sharedData = i * 10
+		fmt.Printf("writer: data set to %d\n", sharedData)
+		rw.Unlock()
+	}
+}
+
+func main() {
+	var wg sync.WaitGroup
+	for i := 0; i &lt; 3; i++ {
+		wg.Add(1)
+		go reader(i, &amp;wg)
+	}
+	wg.Add(1)
+	go writer(&amp;wg)
+	wg.Wait()
+}
+</code></pre>
+<h3 id="pythonthreadingrlock--手動讀寫鎖"><a class="header" href="#pythonthreadingrlock--手動讀寫鎖">Python（threading.RLock + 手動讀寫鎖）</a></h3>
+<pre><code class="language-python"># 執行：python3 ch09.py
+import threading
+import time
+
+shared_data = 0
+rw = threading.Lock()          # 寫者用
+read_count = 0
+read_count_lock = threading.Lock()
+
+def reader(reader_id):
+    global read_count
+    for _ in range(3):
+        with read_count_lock:
+            read_count += 1
+            if read_count == 1:
+                rw.acquire()   # 第一個讀者鎖定寫者
+        print(f"reader {reader_id}: data = {shared_data}")
+        time.sleep(0.02)
+        with read_count_lock:
+            read_count -= 1
+            if read_count == 0:
+                rw.release()   # 最後一個讀者釋放寫者鎖
+
+def writer():
+    global shared_data
+    for i in range(1, 4):
+        time.sleep(0.03)
+        with rw:               # 獨占寫鎖
+            shared_data = i * 10
+            print(f"writer: data set to {shared_data}")
+
+if __name__ == "__main__":
+    ts = [threading.Thread(target=reader, args=(i,)) for i in range(3)]
+    ts.append(threading.Thread(target=writer))
+    for t in ts: t.start()
+    for t in ts: t.join()
+</code></pre>
+<h2 id="完整專案級範例python"><a class="header" href="#完整專案級範例python">完整專案級範例（Python）</a></h2>
+<p>檔案：<code>examples/python/ch09.py</code></p>
+<pre><code class="language-bash">python3 examples/python/ch09.py
+</code></pre>
+<pre><code class="language-python">"""Chapter 09: lock family (Lock/RLock/Condition)."""
+import threading
+
+rlock = threading.RLock()
+cond = threading.Condition(rlock)
+ready = False
+
+
+def producer():
+    global ready
+    with rlock:
+        ready = True
+        cond.notify_all()
+
+
+def consumer():
+    with rlock:
+        while not ready:
+            cond.wait()
+        print("consumer got signal")
+
+
+if __name__ == "__main__":
+    t1 = threading.Thread(target=consumer)
+    t2 = threading.Thread(target=producer)
+    t1.start(); t2.start(); t1.join(); t2.join()
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch08-aqs.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch10-cas.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch08-aqs.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch10-cas.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

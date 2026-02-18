@@ -1,0 +1,607 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>第12章 鎖優化 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">高並發編程通用概念（跨 Java/C++/Rust/Go）</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="第12章-鎖優化"><a class="header" href="#第12章-鎖優化">第12章 鎖優化</a></h1>
+<h2 id="121123-縮小鎖粒度"><a class="header" href="#121123-縮小鎖粒度">12.1~12.3 縮小鎖粒度</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  縮小鎖粒度：粗鎖 vs 細鎖
+
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  BEFORE：一把大鎖保護整個 Map                                ║
+  ╚══════════════════════════════════════════════════════════════╝
+
+  Thread A (讀 k1)  ──┐
+  Thread B (寫 k7)  ──┤──► 爭搶同一把 GlobalLock ──► Map
+  Thread C (讀 k3)  ──┤
+  Thread D (寫 k9)  ──┘
+         │
+         ▼
+  衝突概率 = P(任意兩個操作重疊) ≈ 很高
+  同一時刻只有 1 個執行緒能進入 Map
+
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  AFTER：每個 bucket 一把鎖                                   ║
+  ╚══════════════════════════════════════════════════════════════╝
+
+  Thread A (讀 k1) ──► Lock[bucket_0] ──► bucket[0]: {k1,k2,...}
+  Thread B (寫 k7) ──► Lock[bucket_1] ──► bucket[1]: {k7,k8,...}
+  Thread C (讀 k3) ──► Lock[bucket_0] ──► bucket[0]: {k3,...}
+  Thread D (寫 k9) ──► Lock[bucket_2] ──► bucket[2]: {k9,...}
+         │
+         ▼
+  A 和 C 競爭 bucket_0（才衝突）
+  B 和 D 各用不同 bucket（完全並行）
+
+  衝突概率 = P(兩操作落在同一 bucket) ≈ 1/N（N 為 bucket 數）
+  並發度從 1 提升到接近 bucket 數量
+</code></pre>
+<p>粗鎖改細鎖，減少不必要互斥。</p>
+<p>鎖粒度（Lock Granularity）指的是一把鎖所保護的資料範圍。粗粒度鎖（如保護整個 Map）易於實作但並發度低；細粒度鎖（如每個 bucket 一把鎖）提升並發，但設計複雜度也上升。核心原則：<strong>只鎖真正需要保護的最小資料範圍</strong>。</p>
+<h2 id="124126-分段與分離"><a class="header" href="#124126-分段與分離">12.4~12.6 分段與分離</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  分段鎖（Sharded Lock）：key hash % 16 → shard[i]
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                    Sharded Map（16 個分片）                  │
+  ├─────────────────────────────────────────────────────────────┤
+  │                                                             │
+  │  key ──► hash(key) % 16 ──► 選擇分片                       │
+  │                                                             │
+  │   Shard[0]  ┌──────────┐  Lock[0]  ← Thread A              │
+  │             │ {k0,...} │                                    │
+  │   Shard[1]  ├──────────┤  Lock[1]  ← Thread B (同時並行)   │
+  │             │ {k1,...} │                                    │
+  │   Shard[2]  ├──────────┤  Lock[2]  ← Thread C (同時並行)   │
+  │             │ {k2,...} │                                    │
+  │      ⋮      │    ⋮     │    ⋮                              │
+  │   Shard[15] ├──────────┤  Lock[15] ← Thread P (同時並行)   │
+  │             │ {k15,..} │                                    │
+  │             └──────────┘                                    │
+  │                                                             │
+  │  並發度：最多 16 個執行緒同時操作不同分片（互不阻塞）         │
+  │  衝突只發生在：兩個 key 的 hash%16 值相同時                  │
+  │                                                             │
+  │  對比單一全域鎖：並發度提升 ≈ 16 倍（理論上限）              │
+  └─────────────────────────────────────────────────────────────┘
+
+  白話例子：
+  超商單一結帳櫃台 → 16 個自助結帳機
+  顧客分散到不同機台，排隊時間大幅縮短
+</code></pre>
+<p>把一把全域鎖拆成多段（striped/sharded lock）。</p>
+<p>分段鎖是縮小鎖粒度的極致應用：將資料結構按某種規則（通常是 key 的 hash 值）切分為多個 shard，每個 shard 有獨立的鎖。操作時只鎖對應的 shard，其他 shard 的操作完全不受影響，理論並發度為 shard 數量。</p>
+<h2 id="127129-其他策略"><a class="header" href="#127129-其他策略">12.7~12.9 其他策略</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  鎖策略決策樹
+
+  開始評估並發策略
+         │
+         ▼
+  讀操作遠多於寫操作？
+  ├── 是 ──► 使用讀寫鎖（RWLock / shared_mutex）
+  │          多個讀者同時進入，只有寫者互斥
+  │          適用：配置讀取、快取查詢
+  │
+  └── 否 ──► 操作是否無衝突（CAS 能完成）？
+             ├── 是 ──► 樂觀鎖 / 原子 CAS（lock-free）
+             │          適用：計數器、狀態機、無競爭更新
+             │
+             └── 否 ──► 高吞吐量場景？
+                        ├── 是 ──► 分段鎖（Sharded Lock）
+                        │          適用：並發 Map、並發計數器
+                        │
+                        └── 否 ──► 需要公平性（FIFO 順序）？
+                                   ├── 是 ──► 公平鎖（Fair Lock）
+                                   │          避免飢餓，代價：吞吐略低
+                                   │
+                                   └── 否 ──► 執行緒本地資料夠用？
+                                              ├── 是 ──► ThreadLocal
+                                              │          完全消除鎖競爭
+                                              └── 否 ──► 普通互斥鎖
+                                                         + 縮小持鎖範圍
+</code></pre>
+<p>其他常見鎖優化策略：</p>
+<ul>
+<li><strong>降低持鎖時間</strong>：將 I/O、複雜計算移到臨界區外，只在真正需要保護的最小程式碼段持鎖</li>
+<li><strong>熱點隔離</strong>：高頻訪問的共享計數器可用 per-CPU 計數器或 LongAdder 模式，最後再匯總</li>
+<li><strong>讀寫分離</strong>：讀多寫少場景用 <code>RWMutex</code>，允許多個讀者並行，只有寫者獨佔</li>
+<li><strong>優先無鎖結構</strong>：原子操作（CAS）、無鎖佇列在低競爭場景下比鎖更快</li>
+</ul>
+<p>白話例子：超商單一結帳櫃台改 16 個櫃台，隊伍自然變短。</p>
+<h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
+<p>分段鎖 Map：SHARDS=8，按 key hash 選鎖，多執行緒並發寫入，對比全域鎖展示吞吐量差異。</p>
+<h3 id="c"><a class="header" href="#c">C</a></h3>
+<pre><code class="language-c">/* 編譯: gcc -O2 -pthread -o ch12_c ch12.c &amp;&amp; ./ch12_c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;time.h&gt;
+
+#define SHARDS   8
+#define ITERS    100000
+#define THREADS  4
+
+typedef struct { long count; pthread_mutex_t mu; } Shard;
+
+Shard shards[SHARDS];
+
+static unsigned int hash_key(int key) {
+    return (unsigned int)key * 2654435761u;
+}
+
+void shard_inc(int key) {
+    int idx = hash_key(key) % SHARDS;
+    pthread_mutex_lock(&amp;shards[idx].mu);
+    shards[idx].count++;
+    pthread_mutex_unlock(&amp;shards[idx].mu);
+}
+
+void *worker(void *arg) {
+    int base = *(int *)arg;
+    for (int i = 0; i &lt; ITERS; i++)
+        shard_inc(base * ITERS + i);
+    return NULL;
+}
+
+int main(void) {
+    for (int i = 0; i &lt; SHARDS; i++)
+        pthread_mutex_init(&amp;shards[i].mu, NULL);
+
+    pthread_t ts[THREADS];
+    int ids[THREADS];
+    struct timespec t0, t1;
+    clock_gettime(CLOCK_MONOTONIC, &amp;t0);
+
+    for (int i = 0; i &lt; THREADS; i++) {
+        ids[i] = i;
+        pthread_create(&amp;ts[i], NULL, worker, &amp;ids[i]);
+    }
+    for (int i = 0; i &lt; THREADS; i++) pthread_join(ts[i], NULL);
+
+    clock_gettime(CLOCK_MONOTONIC, &amp;t1);
+    long total = 0;
+    for (int i = 0; i &lt; SHARDS; i++) total += shards[i].count;
+
+    long ms = (t1.tv_sec - t0.tv_sec) * 1000 +
+              (t1.tv_nsec - t0.tv_nsec) / 1000000;
+    printf("total=%ld (expected %d), elapsed=%ldms\n",
+           total, THREADS * ITERS, ms);
+    return 0;
+}
+</code></pre>
+<h3 id="c-1"><a class="header" href="#c-1">C++</a></h3>
+<pre><code class="language-cpp">// 編譯: g++ -std=c++17 -O2 -pthread -o ch12_cpp ch12.cpp &amp;&amp; ./ch12_cpp
+#include &lt;iostream&gt;
+#include &lt;mutex&gt;
+#include &lt;thread&gt;
+#include &lt;vector&gt;
+#include &lt;functional&gt;
+
+constexpr int SHARDS  = 8;
+constexpr int ITERS   = 100000;
+constexpr int THREADS = 4;
+
+struct Shard {
+    long count = 0;
+    std::mutex mu;
+};
+
+Shard shards[SHARDS];
+
+void shard_inc(int key) {
+    int idx = std::hash&lt;int&gt;{}(key) % SHARDS;
+    std::lock_guard lk(shards[idx].mu);
+    shards[idx].count++;
+}
+
+int main() {
+    std::vector&lt;std::thread&gt; ts;
+    for (int i = 0; i &lt; THREADS; i++) {
+        ts.emplace_back([i] {
+            for (int j = 0; j &lt; ITERS; j++)
+                shard_inc(i * ITERS + j);
+        });
+    }
+    for (auto &amp;t : ts) t.join();
+
+    long total = 0;
+    for (auto &amp;s : shards) total += s.count;
+    std::cout &lt;&lt; "total=" &lt;&lt; total
+              &lt;&lt; " (expected=" &lt;&lt; THREADS * ITERS &lt;&lt; ")\n";
+    return 0;
+}
+</code></pre>
+<h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
+<pre><pre class="playground"><code class="language-rust">// 執行: cargo run 或 rustc ch12.rs -o ch12 &amp;&amp; ./ch12
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+const SHARDS: usize = 8;
+const ITERS: usize = 25000;
+const THREADS: usize = 4;
+
+fn hash_shard(key: i32) -&gt; usize {
+    let mut h = DefaultHasher::new();
+    key.hash(&amp;mut h);
+    (h.finish() as usize) % SHARDS
+}
+
+fn main() {
+    // Arc&lt;Vec&lt;Mutex&lt;i64&gt;&gt;&gt;：共享的分段計數器
+    let shards: Arc&lt;Vec&lt;Mutex&lt;i64&gt;&gt;&gt; =
+        Arc::new((0..SHARDS).map(|_| Mutex::new(0)).collect());
+
+    let handles: Vec&lt;_&gt; = (0..THREADS).map(|i| {
+        let shards = Arc::clone(&amp;shards);
+        thread::spawn(move || {
+            for j in 0..ITERS {
+                let key = (i * ITERS + j) as i32;
+                let idx = hash_shard(key);
+                *shards[idx].lock().unwrap() += 1;
+            }
+        })
+    }).collect();
+
+    for h in handles { h.join().unwrap(); }
+
+    let total: i64 = shards.iter().map(|s| *s.lock().unwrap()).sum();
+    println!("total={} (expected={})", total, THREADS * ITERS);
+}</code></pre></pre>
+<h3 id="go"><a class="header" href="#go">Go</a></h3>
+<pre><code class="language-go">// 執行: go run ch12.go
+package main
+
+import (
+	"fmt"
+	"hash/fnv"
+	"sync"
+	"sync/atomic"
+)
+
+const shards = 8
+const iters = 25000
+const workers = 4
+
+type Shard struct {
+	mu    sync.Mutex
+	count int64
+}
+
+var shardMap [shards]Shard
+
+func hashShard(key int) int {
+	h := fnv.New32a()
+	b := [4]byte{byte(key), byte(key &gt;&gt; 8), byte(key &gt;&gt; 16), byte(key &gt;&gt; 24)}
+	h.Write(b[:])
+	return int(h.Sum32()) % shards
+}
+
+func shardInc(key int) {
+	idx := hashShard(key)
+	shardMap[idx].mu.Lock()
+	shardMap[idx].count++
+	shardMap[idx].mu.Unlock()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	for i := 0; i &lt; workers; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			for j := 0; j &lt; iters; j++ {
+				shardInc(i*iters + j)
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	var total int64
+	for i := range shardMap {
+		total += atomic.LoadInt64(&amp;shardMap[i].count)
+	}
+	fmt.Printf("total=%d (expected=%d)\n", total, workers*iters)
+}
+</code></pre>
+<h3 id="python"><a class="header" href="#python">Python</a></h3>
+<pre><code class="language-python"># 執行: python3 ch12.py
+import threading
+import hashlib
+
+SHARDS  = 8
+ITERS   = 10000
+WORKERS = 4
+
+
+class ShardedCounter:
+    def __init__(self, n_shards: int):
+        self.counts = [0] * n_shards
+        self.locks  = [threading.Lock() for _ in range(n_shards)]
+        self.n      = n_shards
+
+    def increment(self, key: int):
+        idx = key % self.n          # 簡單取模作為 hash 函數
+        with self.locks[idx]:
+            self.counts[idx] += 1
+
+    def total(self) -&gt; int:
+        return sum(self.counts)
+
+
+counter = ShardedCounter(SHARDS)
+
+
+def worker(worker_id: int):
+    for j in range(ITERS):
+        counter.increment(worker_id * ITERS + j)
+
+
+if __name__ == "__main__":
+    threads = [threading.Thread(target=worker, args=(i,)) for i in range(WORKERS)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    print(f"total={counter.total()} (expected={WORKERS * ITERS})")
+    print(f"分片分佈: {counter.counts}")
+</code></pre>
+<h2 id="完整專案級範例python"><a class="header" href="#完整專案級範例python">完整專案級範例（Python）</a></h2>
+<p>檔案：<code>examples/python/ch12.py</code></p>
+<pre><code class="language-bash">python3 examples/python/ch12.py
+</code></pre>
+<pre><code class="language-python">"""Chapter 12: lock sharding — 分段鎖實作與對比。"""
+import threading
+import time
+
+SHARDS = 8
+locks = [threading.Lock() for _ in range(SHARDS)]
+data = [0] * SHARDS
+
+
+def update(key: int):
+    """按 key % SHARDS 選擇對應分片的鎖，只鎖該分片。"""
+    idx = key % SHARDS
+    with locks[idx]:
+        data[idx] += 1
+
+
+if __name__ == "__main__":
+    start = time.time()
+    ts = [threading.Thread(target=update, args=(i,)) for i in range(10_000)]
+    for t in ts: t.start()
+    for t in ts: t.join()
+    elapsed = time.time() - start
+    print(f"sum={sum(data)}, elapsed={elapsed:.3f}s")
+    print(f"分片分佈: {data}")
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch11-deadlock.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch13-threadpool.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch11-deadlock.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch13-threadpool.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

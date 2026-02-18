@@ -1,0 +1,612 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>第3章 三大核心問題：分工、同步、互斥 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">高並發編程通用概念（跨 Java/C++/Rust/Go）</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="第3章-三大核心問題分工同步互斥"><a class="header" href="#第3章-三大核心問題分工同步互斥">第3章 三大核心問題：分工、同步、互斥</a></h1>
+<h2 id="31-分工對應-311312"><a class="header" href="#31-分工對應-311312">3.1 分工（對應 3.1.1~3.1.2）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">任務切分流水線（Pipeline 分工）：
+
+  原始任務（序列）：
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  Input ──► Parse ──► Compute ──► Store  （全部串行，吞吐量受限）       │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  分工並行化（三個執行緒分擔不同角色）：
+
+  資料流向：
+
+  ┌─────────────┐     Queue1      ┌──────────────┐     Queue2     ┌──────────────┐
+  │   Input     │ ─────────────► │   Parse      │ ─────────────► │   Compute    │
+  │  (讀取資料)  │                │  Thread T1   │                │  Thread T2   │
+  └─────────────┘                └──────────────┘                └──────┬───────┘
+                                                                         │  Queue3
+                                                                         ▼
+                                                                ┌──────────────┐
+                                                                │   Store      │
+                                                                │  Thread T3   │
+                                                                └──────────────┘
+
+  時間軸對比：
+
+  串行（總時間 = T_parse + T_compute + T_store）：
+  ┌────────┬─────────┬───────┐
+  │ Parse  │ Compute │ Store │
+  └────────┴─────────┴───────┘
+
+  流水線並行（穩態吞吐量 ≈ max(T_parse, T_compute, T_store) 決定瓶頸）：
+  Time: 1  2  3  4  5  6
+  T1:  [P1][P2][P3][P4][P5][P6]  ← Parse
+  T2:     [C1][C2][C3][C4][C5]   ← Compute（等 P1 完）
+  T3:        [S1][S2][S3][S4]    ← Store（等 C1 完）
+              ▲
+           穩態後三個階段同時跑，吞吐量 ≈ 串行的 3 倍
+
+  ⚠ 注意：Stage 之間必須用 Queue 緩衝（解耦速率差異）
+  ⚠ 注意：最慢的 Stage 決定整個 Pipeline 的上限（木桶效應）
+</code></pre>
+<p>把任務切成可平行的小任務，減少單點瓶頸。</p>
+<h2 id="32-同步對應-321322"><a class="header" href="#32-同步對應-321322">3.2 同步（對應 3.2.1~3.2.2）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">同步：因果關係約束（T1 完成 → T2 才能開始）
+
+  因果關係圖：
+
+  Thread T1                           Thread T2
+  ──────────                          ──────────
+  [計算數據]
+  [準備結果]
+       │
+       │  signal / notify / set()
+       ▼
+  ┌────────────┐ ─────────────────────► ┌────────────┐
+  │ done 事件  │                         │ 等待 done  │
+  │ (已發出)   │                         │ wait() 阻塞│
+  └────────────┘                         └─────┬──────┘
+                                               │ 收到通知
+                                               ▼
+                                         [開始消費結果]
+                                         [繼續往下執行]
+
+  時間軸視角（等待/喚醒機制）：
+
+  時間 ──────────────────────────────────────────────────►
+  T1:  [工作][工作][工作] ──► signal ──────────────────────
+  T2:  [wait...]░░░░░░░░░░░░░░░░░░░░░░░░ ──► [繼續執行]
+                ▲                            ▲
+           T2 被阻塞                     T1 發出信號後 T2 喚醒
+
+  常見同步原語對比：
+
+  ┌──────────────┬────────────────────────────────────────────────┐
+  │  原語         │  語意                                          │
+  ├──────────────┼────────────────────────────────────────────────┤
+  │  Event/Flag  │  1:N 通知，一次性或可重置                        │
+  │  Semaphore   │  計數信號量，允許 N 個執行緒同時通過              │
+  │  Barrier     │  所有參與者都到達後才一起放行                     │
+  │  CountDown   │  計數到 0 後通知等待者                           │
+  │  Condition   │  wait/notify，配合鎖使用                         │
+  └──────────────┴────────────────────────────────────────────────┘
+</code></pre>
+<p>約束「先後順序」，避免讀到半成品。</p>
+<h2 id="33-互斥對應-331332"><a class="header" href="#33-互斥對應-331332">3.3 互斥（對應 3.3.1~3.3.2）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">互斥：臨界區保護（同一時間只有一個執行緒進入）
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                       臨界區（Critical Section）                  │
+  │                                                                 │
+  │  ┌──────────┐     lock()    ┌───────────────────┐              │
+  │  │ Thread 1 │ ─────────────►│  正在執行          │              │
+  │  └──────────┘   成功，進入   │  counter++         │              │
+  │                             └───────────────────┘              │
+  │  ┌──────────┐     lock()    ┌───────────────────┐              │
+  │  │ Thread 2 │ ─────────────►│  阻塞等待...       │              │
+  │  └──────────┘   失敗，排隊   │  ░░░░░░░░░░░░░░   │              │
+  │                             └───────────────────┘              │
+  │  ┌──────────┐     lock()    ┌───────────────────┐              │
+  │  │ Thread 3 │ ─────────────►│  阻塞等待...       │              │
+  │  └──────────┘   失敗，排隊   │  ░░░░░░░░░░░░░░   │              │
+  │                             └───────────────────┘              │
+  └─────────────────────────────────────────────────────────────────┘
+
+  鎖的生命週期：
+
+  Thread 1:  ──► lock() ──► [臨界區] ──► unlock() ──►
+                  │                          │
+                  │ 獲取鎖（進入）            │ 釋放鎖
+                  ▼                          ▼
+  Thread 2:  ──► lock() ── 阻塞....... ──► [臨界區] ──► unlock() ──►
+                           ▲               ▲
+                        T1 持有鎖時        T1 unlock 後
+                        T2 被阻塞          T2 被喚醒
+
+  互斥保護的是「操作的不可分性」，確保中間狀態不被其他執行緒看見。
+</code></pre>
+<p>同一時間只允許一個執行單元修改共享資料。</p>
+<p>白話例子：結帳金額是共享資源，兩個收銀機同時改同筆訂單會亂掉；互斥鎖好比「正在服務中，請稍候」的牌子。</p>
+<h2 id="示意圖"><a class="header" href="#示意圖">示意圖</a></h2>
+<pre><code class="language-text">三大核心問題綜合示意（Pipeline + 同步 + 互斥）：
+
+  ┌──────────┐       Queue        ┌──────────────┐      Queue      ┌──────────┐
+  │ Producer │ ──────────────────►│    Buffer    │───────────────► │ Consumer │
+  │  Thread  │  (互斥：每次只有   │  (同步：      │ (互斥：每次只有  │  Thread  │
+  │ 生產資料  │   一個寫入者)      │  Buffer 非空  │  一個讀取者)     │ 消費資料  │
+  └──────────┘                    │  才能消費）   │                 └──────────┘
+                                  └──────────────┘
+
+  分工：Producer 和 Consumer 各自獨立執行（分工）
+  同步：Consumer 等待 Buffer 有資料（同步）
+  互斥：Buffer 的讀寫必須互斥，防止資料損毀（互斥）
+</code></pre>
+<h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
+<p>三執行緒 Pipeline（Producer → Buffer → Consumer），展示分工 + 同步 + 互斥。</p>
+<h3 id="cpthread--condition-variable"><a class="header" href="#cpthread--condition-variable">C（pthread + condition variable）</a></h3>
+<pre><code class="language-c">#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#define BUFFER_SIZE 8
+#define ITEMS 10
+
+int buffer[BUFFER_SIZE];
+int head = 0, tail = 0, count = 0;
+int done = 0;
+
+pthread_mutex_t mu = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t not_full  = PTHREAD_COND_INITIALIZER;
+pthread_cond_t not_empty = PTHREAD_COND_INITIALIZER;
+
+void *producer(void *arg) {
+    for (int i = 0; i &lt; ITEMS; i++) {
+        pthread_mutex_lock(&amp;mu);
+        while (count == BUFFER_SIZE)
+            pthread_cond_wait(&amp;not_full, &amp;mu);
+        buffer[tail] = i;
+        tail = (tail + 1) % BUFFER_SIZE;
+        count++;
+        printf("[Producer] put %d\n", i);
+        pthread_cond_signal(&amp;not_empty);
+        pthread_mutex_unlock(&amp;mu);
+    }
+    pthread_mutex_lock(&amp;mu);
+    done = 1;
+    pthread_cond_signal(&amp;not_empty);
+    pthread_mutex_unlock(&amp;mu);
+    return NULL;
+}
+
+void *consumer(void *arg) {
+    while (1) {
+        pthread_mutex_lock(&amp;mu);
+        while (count == 0 &amp;&amp; !done)
+            pthread_cond_wait(&amp;not_empty, &amp;mu);
+        if (count == 0 &amp;&amp; done) { pthread_mutex_unlock(&amp;mu); break; }
+        int val = buffer[head];
+        head = (head + 1) % BUFFER_SIZE;
+        count--;
+        printf("[Consumer] got %d\n", val);
+        pthread_cond_signal(&amp;not_full);
+        pthread_mutex_unlock(&amp;mu);
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t p, c;
+    pthread_create(&amp;p, NULL, producer, NULL);
+    pthread_create(&amp;c, NULL, consumer, NULL);
+    pthread_join(p, NULL);
+    pthread_join(c, NULL);
+    return 0;
+}
+</code></pre>
+<pre><code class="language-bash">gcc -o pipeline pipeline.c -lpthread &amp;&amp; ./pipeline
+</code></pre>
+<h3 id="cstdthread--condition_variable"><a class="header" href="#cstdthread--condition_variable">C++（std::thread + condition_variable）</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;queue&gt;
+#include &lt;mutex&gt;
+#include &lt;condition_variable&gt;
+
+const int ITEMS = 10;
+std::queue&lt;int&gt; buffer;
+std::mutex mu;
+std::condition_variable not_empty;
+bool producer_done = false;
+
+void producer() {
+    for (int i = 0; i &lt; ITEMS; i++) {
+        std::unique_lock&lt;std::mutex&gt; lock(mu);
+        buffer.push(i);
+        std::cout &lt;&lt; "[Producer] put " &lt;&lt; i &lt;&lt; "\n";
+        not_empty.notify_one();
+    }
+    std::unique_lock&lt;std::mutex&gt; lock(mu);
+    producer_done = true;
+    not_empty.notify_all();
+}
+
+void consumer() {
+    while (true) {
+        std::unique_lock&lt;std::mutex&gt; lock(mu);
+        not_empty.wait(lock, [] { return !buffer.empty() || producer_done; });
+        if (buffer.empty()) break;
+        int val = buffer.front(); buffer.pop();
+        std::cout &lt;&lt; "[Consumer] got " &lt;&lt; val &lt;&lt; "\n";
+    }
+}
+
+int main() {
+    std::thread p(producer), c(consumer);
+    p.join(); c.join();
+}
+</code></pre>
+<pre><code class="language-bash">g++ -std=c++17 -o pipeline pipeline.cpp -lpthread &amp;&amp; ./pipeline
+</code></pre>
+<h3 id="ruststdsyncmpsc-channel"><a class="header" href="#ruststdsyncmpsc-channel">Rust（std::sync::mpsc channel）</a></h3>
+<pre><pre class="playground"><code class="language-rust">use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+
+const ITEMS: i32 = 10;
+
+fn main() {
+    let (tx, rx) = mpsc::channel::&lt;i32&gt;();
+
+    let producer = thread::spawn(move || {
+        for i in 0..ITEMS {
+            println!("[Producer] put {}", i);
+            tx.send(i).unwrap();
+            thread::sleep(Duration::from_millis(10));
+        }
+        // tx 在此 drop，channel 自動關閉
+    });
+
+    let consumer = thread::spawn(move || {
+        for val in rx {   // rx 迭代到 channel 關閉為止
+            println!("[Consumer] got {}", val);
+        }
+        println!("[Consumer] done");
+    });
+
+    producer.join().unwrap();
+    consumer.join().unwrap();
+}</code></pre></pre>
+<pre><code class="language-bash">cargo run
+</code></pre>
+<h3 id="gogoroutine--channel"><a class="header" href="#gogoroutine--channel">Go（goroutine + channel）</a></h3>
+<pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "time"
+)
+
+const items = 10
+
+func producer(ch chan&lt;- int) {
+    for i := 0; i &lt; items; i++ {
+        fmt.Printf("[Producer] put %d\n", i)
+        ch &lt;- i
+        time.Sleep(10 * time.Millisecond)
+    }
+    close(ch)
+}
+
+func consumer(ch &lt;-chan int) {
+    for val := range ch {
+        fmt.Printf("[Consumer] got %d\n", val)
+    }
+    fmt.Println("[Consumer] done")
+}
+
+func main() {
+    ch := make(chan int, 4)  // 緩衝 channel 作為 buffer
+    go producer(ch)
+    consumer(ch)             // 主 goroutine 當 consumer
+}
+</code></pre>
+<pre><code class="language-bash">go run main.go
+</code></pre>
+<h3 id="pythonqueuequeue--threading"><a class="header" href="#pythonqueuequeue--threading">Python（queue.Queue + threading）</a></h3>
+<pre><code class="language-python">import queue
+import threading
+
+ITEMS = 10
+buf: queue.Queue[int] = queue.Queue(maxsize=4)
+
+def producer():
+    for i in range(ITEMS):
+        buf.put(i)                   # 滿了就阻塞（同步）
+        print(f"[Producer] put {i}")
+    buf.put(None)                    # 哨兵值通知結束
+
+def consumer():
+    while True:
+        val = buf.get()              # 空了就阻塞（同步）
+        if val is None:
+            break
+        print(f"[Consumer] got {val}")
+    print("[Consumer] done")
+
+if __name__ == "__main__":
+    t_prod = threading.Thread(target=producer)
+    t_cons = threading.Thread(target=consumer)
+    t_prod.start()
+    t_cons.start()
+    t_prod.join()
+    t_cons.join()
+</code></pre>
+<pre><code class="language-bash">python3 pipeline.py
+</code></pre>
+<h2 id="完整專案級範例python"><a class="header" href="#完整專案級範例python">完整專案級範例（Python）</a></h2>
+<p>檔案：<code>examples/python/ch03.py</code></p>
+<pre><code class="language-bash">python3 examples/python/ch03.py
+</code></pre>
+<pre><code class="language-python">"""Chapter 03: split work + sync.
+
+展示三大核心問題：
+1. 分工：Producer 和 Consumer 各自獨立執行
+2. 同步：Consumer 等待 Buffer 有資料（queue.Queue 內建阻塞語意）
+3. 互斥：Queue 內部使用鎖保護 Buffer 讀寫
+"""
+import queue
+import threading
+
+buf: queue.Queue[int] = queue.Queue()
+barrier = threading.Barrier(3)
+
+
+def worker(name: str):
+    s = 0
+    while True:
+        try:
+            s += buf.get_nowait()
+        except queue.Empty:
+            break
+    print(name, "partial=", s)
+    barrier.wait()
+
+
+if __name__ == "__main__":
+    for i in range(1, 11):
+        buf.put(i)
+    ts = [threading.Thread(target=worker, args=(f"W{i}",)) for i in (1, 2)]
+    for t in ts:
+        t.start()
+    barrier.wait()
+    print("all workers reached sync point")
+    for t in ts:
+        t.join()
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch02-basics-risks.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch04-atomic-visibility-order.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch02-basics-risks.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch04-atomic-visibility-order.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

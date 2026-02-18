@@ -1,0 +1,658 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>第11章 死鎖 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">高並發編程通用概念（跨 Java/C++/Rust/Go）</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="第11章-死鎖"><a class="header" href="#第11章-死鎖">第11章 死鎖</a></h1>
+<h2 id="111-死鎖定義"><a class="header" href="#111-死鎖定義">11.1 死鎖定義</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  資源分配圖：循環等待形成死鎖
+
+  ┌─────────────┐         ┌─────────────┐
+  │  Thread T1  │         │  Thread T2  │
+  └──────┬──────┘         └──────┬──────┘
+         │ 持有(hold)              │ 持有(hold)
+         ▼                        ▼
+  ┌─────────────┐         ┌─────────────┐
+  │  Resource A │         │  Resource B │
+  └─────────────┘         └─────────────┘
+         ▲                        ▲
+         │ 等待(wait)              │ 等待(wait)
+  ┌──────┴──────┐         ┌──────┴──────┐
+  │  Thread T2  │         │  Thread T1  │
+  └─────────────┘         └─────────────┘
+
+  T1 → 持有 A，等待 B
+  T2 → 持有 B，等待 A
+  ↔ 形成有向循環 ⇒ 永遠無法推進 ⇒ 死鎖
+</code></pre>
+<p>兩個或以上執行緒互相等待對方釋放資源，永遠走不下去。</p>
+<p>死鎖（Deadlock）是指一組執行緒陷入永久等待的狀態：每個執行緒都在等待另一個執行緒持有的資源，而那個執行緒也在等待更多資源，形成一個閉合的等待環。作業系統無法自動解除這種僵局，程式將永久掛起。</p>
+<h2 id="112-演化過程對應-11211123"><a class="header" href="#112-演化過程對應-11211123">11.2 演化過程（對應 11.2.1~11.2.3）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  時間軸：安全狀態 → 不安全狀態 → 死鎖
+
+  時間點   Thread T1              Thread T2            系統狀態
+  ──────   ──────────────────     ──────────────────   ────────────
+   t0      (就緒)                 (就緒)               ✅ 安全
+
+   t1      lock(A) ✓              lock(B) ✓            ⚠️  危險
+           [持有 A]               [持有 B]
+
+   t2      try lock(B) → 阻塞     try lock(A) → 阻塞   🔴 不安全
+           [持有 A，等 B]         [持有 B，等 A]
+           ╔══════════╗           ╔══════════╗
+           ║  WAITING ║           ║  WAITING ║
+           ╚══════════╝           ╚══════════╝
+
+   t3      ████████████           ████████████         💀 死鎖
+           (永遠等待)              (永遠等待)
+           CPU 佔用 0%，但無法繼續
+
+  ──────────────────────────────────────────────────────
+  關鍵轉折：t1→t2 時，兩個執行緒都已「持有資源並等待」
+  一旦形成循環，無外部干預則永不解除
+</code></pre>
+<p>不安全排程 + 資源競用，逐步滑向死鎖。</p>
+<p>死鎖的形成通常是逐步的：系統從安全狀態出發，隨著執行緒依序取得部分資源，進入不安全狀態，最終當所有執行緒都在等待對方持有的資源時，死鎖完成。</p>
+<h2 id="113-四必要條件"><a class="header" href="#113-四必要條件">11.3 四必要條件</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  死鎖四必要條件（缺一不可）
+
+  ┌────────────────────────────────────────────────────────────────┐
+  │  條件一：互斥（Mutual Exclusion）                               │
+  │                                                                │
+  │  ┌────────┐    只能一人使用    ┌────────────┐                  │
+  │  │ T1佔用 │ ────────────────► │   廁所     │ ◄── T2 被擋在外  │
+  │  └────────┘                   │（互斥資源）│                  │
+  │                               └────────────┘                  │
+  │  白話：廁所同時只能一個人用，資源不能共享                       │
+  └────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────┐
+  │  條件二：持有且等待（Hold and Wait）                            │
+  │                                                                │
+  │  ┌──────────────────────────┐                                 │
+  │  │ T1 手握 Lock A           │                                 │
+  │  │      └→ 還要申請 Lock B  │  ← 不先放 A，直接等 B           │
+  │  └──────────────────────────┘                                 │
+  │  白話：手拿叉子，還要等筷子，但不肯放叉子                       │
+  └────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────┐
+  │  條件三：不可剝奪（No Preemption）                              │
+  │                                                                │
+  │  OS/排程器 ─✗→ 強制搶走 T1 的 Lock A                          │
+  │                                                                │
+  │  只有 T1 自己 release() 才能釋放，外力無法強取                  │
+  │  白話：手裡的漢堡不能被別人硬搶走                               │
+  └────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────┐
+  │  條件四：循環等待（Circular Wait）                              │
+  │                                                                │
+  │       T1 ──等待──► Lock B (被 T2 持有)                        │
+  │        ▲                    │                                  │
+  │        │                    ▼                                  │
+  │       Lock A ◄──等待── T2                                     │
+  │  (被 T1 持有)                                                  │
+  │                                                                │
+  │  白話：A 等 B，B 等 A，繞成一個圈                               │
+  └────────────────────────────────────────────────────────────────┘
+
+  ⚡ 破壞任一條件即可預防死鎖！
+</code></pre>
+<p>死鎖的四個必要條件：</p>
+<ul>
+<li><strong>互斥</strong>：資源在某時刻只能被一個執行緒佔用</li>
+<li><strong>持有且等待</strong>：執行緒持有至少一個資源，同時等待獲取其他執行緒持有的資源</li>
+<li><strong>不可剝奪</strong>：已分配的資源不能被強制奪走，只能由持有者主動釋放</li>
+<li><strong>循環等待</strong>：存在一個執行緒等待鏈，形成閉合迴路</li>
+</ul>
+<p>四個條件缺一不可，破壞其中任何一個即可預防死鎖。</p>
+<h2 id="114-預防與處理"><a class="header" href="#114-預防與處理">11.4 預防與處理</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  三種策略對比
+
+  ┌──────────────────┬───────────────────────────┬──────────────────────┐
+  │     策略         │        做法               │   代價 / 適用場景    │
+  ├──────────────────┼───────────────────────────┼──────────────────────┤
+  │ 固定加鎖順序     │ 所有執行緒按相同順序加鎖  │ 代價：需全局規劃順序 │
+  │                  │                           │ 適用：鎖數量固定、   │
+  │ T1: lock(A→B)    │  ┌──┐    ┌──┐            │       關係清晰       │
+  │ T2: lock(A→B)    │  │A │───►│B │            │                      │
+  │ (不再交叉)       │  └──┘    └──┘            │ ✅ 最可靠            │
+  ├──────────────────┼───────────────────────────┼──────────────────────┤
+  │ tryLock + 逾時   │ 嘗試加鎖，超過期限就放棄  │ 代價：需處理失敗重試 │
+  │                  │                           │ 適用：鎖等待時間可   │
+  │ if tryLock(B,    │  ┌───────────────┐        │       預期、業務允   │
+  │   100ms):        │  │嘗試 100ms 後  │        │       許重試         │
+  │   use B          │  │放棄，釋放 A   │        │                      │
+  │ else:            │  └───────────────┘        │ ⚠️  可能活鎖        │
+  │   release A      │                           │                      │
+  ├──────────────────┼───────────────────────────┼──────────────────────┤
+  │ 縮小持鎖範圍     │ 盡量縮短持鎖時間          │ 代價：需重新設計邏輯 │
+  │                  │                           │ 適用：業務邏輯可拆   │
+  │ 只在讀寫共享     │  ┌──────────────────────┐ │       分、IO操作多   │
+  │ 資料時持鎖，     │  │lock │ op │ unlock    │ │                      │
+  │ IO 等慢操作移出  │  └──────────────────────┘ │ ✅ 提升整體吞吐量   │
+  │ 臨界區外         │   短   短   短             │                      │
+  └──────────────────┴───────────────────────────┴──────────────────────┘
+
+  死鎖偵測與恢復（補救手段）：
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  偵測：定期掃描資源分配圖，尋找循環                              │
+  │  恢復：選擇犧牲者（victim）→ 強制回滾或終止，釋放其資源          │
+  │  適用：資料庫系統（如 MySQL 死鎖偵測）                           │
+  └─────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p>三種主流預防策略：</p>
+<ul>
+<li><strong>固定鎖順序</strong>：所有執行緒按相同的全局排序依序加鎖，確保不存在循環等待</li>
+<li><strong><code>tryLock</code> + timeout</strong>：嘗試加鎖，超時後放棄並釋放已持有的鎖，待稍後重試</li>
+<li><strong>減少持鎖時間</strong>：將不需要持鎖的操作（如 I/O、計算）移到臨界區外，降低衝突視窗</li>
+</ul>
+<pre><code class="language-text">T1: lock(A) -&gt; wait(B)
+T2: lock(B) -&gt; wait(A)
+=&gt; deadlock
+
+修正後（固定順序）:
+T1: lock(A) -&gt; lock(B) -&gt; unlock(B) -&gt; unlock(A)
+T2: lock(A) -&gt; lock(B) -&gt; unlock(B) -&gt; unlock(A)
+=&gt; 不再有循環，死鎖不可能發生
+</code></pre>
+<h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
+<p>固定加鎖順序避免死鎖：兩把鎖按 id 排序後加鎖，無論執行緒以何種順序呼叫，都不會形成循環等待。</p>
+<h3 id="c"><a class="header" href="#c">C</a></h3>
+<pre><code class="language-c">/* 編譯: gcc -O2 -pthread -o ch11_c ch11.c &amp;&amp; ./ch11_c */
+#include &lt;stdio.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;unistd.h&gt;
+
+typedef struct { int id; pthread_mutex_t mu; } Lock;
+
+/* 按 id 排序後加鎖，破壞循環等待條件 */
+void lock_ordered(Lock *a, Lock *b) {
+    if (a-&gt;id &lt; b-&gt;id) {
+        pthread_mutex_lock(&amp;a-&gt;mu);
+        pthread_mutex_lock(&amp;b-&gt;mu);
+    } else {
+        pthread_mutex_lock(&amp;b-&gt;mu);
+        pthread_mutex_lock(&amp;a-&gt;mu);
+    }
+}
+
+void unlock_ordered(Lock *a, Lock *b) {
+    pthread_mutex_unlock(&amp;a-&gt;mu);
+    pthread_mutex_unlock(&amp;b-&gt;mu);
+}
+
+Lock res_a = {0, PTHREAD_MUTEX_INITIALIZER};
+Lock res_b = {1, PTHREAD_MUTEX_INITIALIZER};
+int shared = 0;
+
+void *thread_fn(void *arg) {
+    int id = *(int *)arg;
+    for (int i = 0; i &lt; 5; i++) {
+        lock_ordered(&amp;res_a, &amp;res_b);
+        shared++;
+        printf("Thread %d: shared = %d\n", id, shared);
+        unlock_ordered(&amp;res_a, &amp;res_b);
+        usleep(1000);
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t t1, t2;
+    int id1 = 1, id2 = 2;
+    pthread_create(&amp;t1, NULL, thread_fn, &amp;id1);
+    pthread_create(&amp;t2, NULL, thread_fn, &amp;id2);
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    printf("Final shared = %d\n", shared);
+    return 0;
+}
+</code></pre>
+<h3 id="c-1"><a class="header" href="#c-1">C++</a></h3>
+<pre><code class="language-cpp">// 編譯: g++ -std=c++17 -O2 -pthread -o ch11_cpp ch11.cpp &amp;&amp; ./ch11_cpp
+#include &lt;iostream&gt;
+#include &lt;mutex&gt;
+#include &lt;thread&gt;
+#include &lt;vector&gt;
+
+struct OrderedLock {
+    int id;
+    std::mutex mu;
+};
+
+// std::scoped_lock 內部用 std::lock() 實作死鎖安全加鎖
+void transfer(OrderedLock &amp;from, OrderedLock &amp;to, int &amp;counter) {
+    std::scoped_lock lk(from.mu, to.mu);   // 同時安全地鎖兩把
+    counter++;
+    std::cout &lt;&lt; "transferred, counter=" &lt;&lt; counter &lt;&lt; "\n";
+}
+
+int main() {
+    OrderedLock account_a{0, {}};
+    OrderedLock account_b{1, {}};
+    int counter = 0;
+    std::mutex cout_mu;
+
+    std::vector&lt;std::thread&gt; threads;
+    for (int i = 0; i &lt; 4; i++) {
+        // 奇偶執行緒使用不同方向，但 scoped_lock 保證不死鎖
+        if (i % 2 == 0)
+            threads.emplace_back(transfer, std::ref(account_a),
+                                 std::ref(account_b), std::ref(counter));
+        else
+            threads.emplace_back(transfer, std::ref(account_b),
+                                 std::ref(account_a), std::ref(counter));
+    }
+    for (auto &amp;t : threads) t.join();
+    std::cout &lt;&lt; "Final counter=" &lt;&lt; counter &lt;&lt; "\n";
+    return 0;
+}
+</code></pre>
+<h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
+<pre><pre class="playground"><code class="language-rust">// 執行: cargo run 或 rustc ch11.rs &amp;&amp; ./ch11
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+struct Resource {
+    id: u32,
+    data: Mutex&lt;i32&gt;,
+}
+
+// 按 id 排序後取鎖，確保全局順序
+fn locked_update(a: &amp;Resource, b: &amp;Resource) {
+    let (first, second) = if a.id &lt; b.id { (a, b) } else { (b, a) };
+    let mut g1 = first.data.lock().unwrap();
+    let mut g2 = second.data.lock().unwrap();
+    *g1 += 1;
+    *g2 += 1;
+    println!("updated: res[{}]={}, res[{}]={}", first.id, *g1, second.id, *g2);
+}
+
+fn main() {
+    let res_a = Arc::new(Resource { id: 0, data: Mutex::new(0) });
+    let res_b = Arc::new(Resource { id: 1, data: Mutex::new(0) });
+
+    let handles: Vec&lt;_&gt; = (0..4).map(|i| {
+        let (a, b) = (Arc::clone(&amp;res_a), Arc::clone(&amp;res_b));
+        thread::spawn(move || {
+            // 一半執行緒傳 (a,b)，另一半傳 (b,a)，但排序保證安全
+            if i % 2 == 0 { locked_update(&amp;a, &amp;b); }
+            else           { locked_update(&amp;b, &amp;a); }
+        })
+    }).collect();
+
+    for h in handles { h.join().unwrap(); }
+    println!("Done, no deadlock.");
+}</code></pre></pre>
+<h3 id="go"><a class="header" href="#go">Go</a></h3>
+<pre><code class="language-go">// 執行: go run ch11.go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+type Resource struct {
+	id int
+	mu sync.Mutex
+}
+
+// 按 id 排序加鎖，破壞循環等待
+func lockedTransfer(a, b *Resource, counter *int, mu *sync.Mutex) {
+	first, second := a, b
+	if a.id &gt; b.id {
+		first, second = b, a
+	}
+	first.mu.Lock()
+	second.mu.Lock()
+	defer first.mu.Unlock()
+	defer second.mu.Unlock()
+
+	mu.Lock()
+	*counter++
+	fmt.Printf("transfer done, counter=%d\n", *counter)
+	mu.Unlock()
+}
+
+func main() {
+	resA := &amp;Resource{id: 0}
+	resB := &amp;Resource{id: 1}
+	counter := 0
+	var printMu sync.Mutex
+	var wg sync.WaitGroup
+
+	for i := 0; i &lt; 8; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			if i%2 == 0 {
+				lockedTransfer(resA, resB, &amp;counter, &amp;printMu)
+			} else {
+				lockedTransfer(resB, resA, &amp;counter, &amp;printMu)
+			}
+		}(i)
+	}
+	wg.Wait()
+	fmt.Printf("Final counter=%d, no deadlock!\n", counter)
+}
+</code></pre>
+<h3 id="python"><a class="header" href="#python">Python</a></h3>
+<pre><code class="language-python"># 執行: python3 ch11.py
+import threading
+import time
+
+
+class OrderedLock:
+    def __init__(self, lock_id: int):
+        self.id = lock_id
+        self.mu = threading.Lock()
+
+
+def locked_transfer(a: OrderedLock, b: OrderedLock, counter: list):
+    """按 id 排序後加鎖，確保不形成循環等待。"""
+    first, second = (a, b) if a.id &lt; b.id else (b, a)
+    with first.mu:
+        time.sleep(0.001)          # 模擬工作，增加競爭機會
+        with second.mu:
+            counter[0] += 1
+            print(f"Thread {threading.current_thread().name}: "
+                  f"counter={counter[0]}")
+
+
+if __name__ == "__main__":
+    res_a = OrderedLock(0)
+    res_b = OrderedLock(1)
+    counter = [0]
+
+    threads = []
+    for i in range(8):
+        # 奇偶執行緒傳入順序相反，但 ordered lock 保證安全
+        if i % 2 == 0:
+            t = threading.Thread(target=locked_transfer,
+                                 args=(res_a, res_b, counter), name=f"T{i}")
+        else:
+            t = threading.Thread(target=locked_transfer,
+                                 args=(res_b, res_a, counter), name=f"T{i}")
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+    print(f"Final counter={counter[0]}, no deadlock!")
+</code></pre>
+<h2 id="完整專案級範例python"><a class="header" href="#完整專案級範例python">完整專案級範例（Python）</a></h2>
+<p>檔案：<code>examples/python/ch11.py</code></p>
+<pre><code class="language-bash">python3 examples/python/ch11.py
+</code></pre>
+<pre><code class="language-python">"""Chapter 11: deadlock avoidance via timeout and ordered locking."""
+import threading
+import time
+
+A = threading.Lock()
+B = threading.Lock()
+
+
+def worker1():
+    """持有 A 後嘗試取 B，超時則主動放棄避免死鎖。"""
+    with A:
+        time.sleep(0.05)
+        if B.acquire(timeout=0.1):
+            print("w1 got B")
+            B.release()
+        else:
+            print("w1 timeout on B — 避免死鎖，稍後重試")
+
+
+def worker2():
+    """持有 B 後嘗試取 A，超時則主動放棄避免死鎖。"""
+    with B:
+        time.sleep(0.05)
+        if A.acquire(timeout=0.1):
+            print("w2 got A")
+            A.release()
+        else:
+            print("w2 timeout on A — 避免死鎖，稍後重試")
+
+
+if __name__ == "__main__":
+    t1 = threading.Thread(target=worker1)
+    t2 = threading.Thread(target=worker2)
+    t1.start(); t2.start(); t1.join(); t2.join()
+    print("程式正常結束，無死鎖")
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch10-cas.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch12-lock-optimization.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch10-cas.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch12-lock-optimization.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

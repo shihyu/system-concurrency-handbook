@@ -1,0 +1,651 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>第2章 並發基礎概念與風險 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">高並發編程通用概念（跨 Java/C++/Rust/Go）</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="第2章-並發基礎概念與風險"><a class="header" href="#第2章-並發基礎概念與風險">第2章 並發基礎概念與風險</a></h1>
+<h2 id="21-基本名詞對應-211219"><a class="header" href="#21-基本名詞對應-211219">2.1 基本名詞（對應 2.1.1~2.1.9）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">進程 vs 線程：
+
+  ┌──────────────────────────────────────────────────────┐
+  │  Process 進程（資源容器）                              │
+  │  ┌──────────────────────────────────────────────┐    │
+  │  │  虛擬記憶體空間 / 檔案描述符 / 信號處理器        │    │
+  │  └──────────────────────────────────────────────┘    │
+  │                                                      │
+  │  ┌────────────┐  ┌────────────┐  ┌────────────┐     │
+  │  │  Thread A  │  │  Thread B  │  │  Thread C  │     │
+  │  │ (執行單位)  │  │ (執行單位)  │  │ (執行單位)  │     │
+  │  │  Stack     │  │  Stack     │  │  Stack     │     │
+  │  │  PC/暫存器  │  │  PC/暫存器  │  │  PC/暫存器  │     │
+  │  └────────────┘  └────────────┘  └────────────┘     │
+  │       └──────────────┴──────────────┘               │
+  │                   共享 Heap / 全域變數                │
+  └──────────────────────────────────────────────────────┘
+
+並發 Concurrency（交錯推進，不一定同時）：
+
+  時間軸 ─────────────────────────────────────────────►
+         ┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+  Core0  │ A │ B │ A │ C │ B │ C │ A │ B │ C │
+         └───┴───┴───┴───┴───┴───┴───┴───┴───┘
+          ▲   ▲
+        切換  切換（Context Switch）
+
+並行 Parallelism（真正同時，需要多核）：
+
+  時間軸 ──────────────────────────────────────────────►
+         ┌─────────────────────────────────────────┐
+  Core0  │  A  │  A  │  A  │  A  │  A  │  A  │    │
+         ├─────────────────────────────────────────┤
+  Core1  │  B  │  B  │  B  │  B  │  B  │  B  │    │
+         └─────────────────────────────────────────┘
+
+同步 Sync（呼叫後阻塞等待結果）：
+
+  caller ──► [發出請求] ──► [等待中...] ──► [得到結果] ──► 繼續往下
+
+異步 Async（呼叫後立即返回，結果晚點通知）：
+
+  caller ──► [發出請求] ──► 繼續做其他事情 ...
+                  └──────────────────────────► [callback/future 收到結果]
+
+阻塞 Blocking（等待期間執行流停住）：
+
+  T1: ──► [發出 I/O 請求] ──► ░░░░░░░░ WAIT ░░░░░░░░ ──► [繼續]
+                               ▲ 這段時間 CPU 不執行此線程
+
+非阻塞 Non-blocking（不停住，改輪詢或事件驅動）：
+
+  T1: ──► [發出 I/O 請求] ──► [做其他工作] ──► [輪詢/事件] ──► [繼續]
+</code></pre>
+<ul>
+<li>進程：資源容器。</li>
+<li>線程：執行單位。</li>
+<li>並發：交錯進行。</li>
+<li>並行：同時進行。</li>
+<li>同步/異步：拿結果的方式。</li>
+<li>阻塞/非阻塞：等待時是否卡住執行流。</li>
+</ul>
+<h2 id="22-三大風險對應-221223"><a class="header" href="#22-三大風險對應-221223">2.2 三大風險（對應 2.2.1~2.2.3）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">並發三大風險三角形：
+
+                        ┌──────────────────────┐
+                        │    安全性（Safety）    │
+                        │    結果正確性         │
+                        │                      │
+                        │  典型症狀：           │
+                        │  ・counter 結果偏小   │
+                        │  ・資料庫記錄重複      │
+                        │  ・賬戶餘額計算錯誤    │
+                        └──────────┬───────────┘
+                                   │
+                         三者往往互相影響
+                        ┌──────────┴───────────┐
+                        │                      │
+           ┌────────────┴──────────┐  ┌────────┴──────────────┐
+           │   活躍性（Liveness）   │  │   效能（Performance）  │
+           │   程式能繼續推進       │  │   速度是否夠快          │
+           │                      │  │                        │
+           │  典型症狀：           │  │  典型症狀：             │
+           │  ・死鎖 Deadlock      │  │  ・鎖競爭（Contention） │
+           │    T1 等 T2 的鎖      │  │  ・上下文切換過多        │
+           │    T2 等 T1 的鎖      │  │  ・快取失效（Cache Miss）│
+           │  ・飢餓 Starvation    │  │  ・假共享（False Sharing）│
+           │    低優先級線程永遠    │  │                        │
+           │    搶不到鎖           │  │  解法：鎖粒度、CAS、     │
+           │  ・活鎖 Livelock      │  │  無鎖結構、線程池調優    │
+           │    雙方都在讓步但都    │  │                        │
+           │    無法推進           │  │                        │
+           └──────────────────────┘  └────────────────────────┘
+
+三者關係：
+  ・過度加鎖 → 安全性高，但效能差
+  ・不加鎖   → 效能好，但安全性崩潰
+  ・鎖粒度錯 → 可能同時損失效能和活躍性（死鎖）
+
+死鎖示意（T1/T2 互等）：
+
+  T1: ──► [持有 Lock A] ──► [等待 Lock B] ─► 永久阻塞
+  T2: ──► [持有 Lock B] ──► [等待 Lock A] ─► 永久阻塞
+                    ▲                  ▲
+                    └──── 循環等待 ─────┘
+</code></pre>
+<ul>
+<li>安全性：結果錯（資料競爭）。</li>
+<li>活躍性：做不完（死鎖/飢餓/活鎖）。</li>
+<li>效能：做得慢（鎖競爭、上下文切換）。</li>
+</ul>
+<h2 id="23-鎖分類對應-231238"><a class="header" href="#23-鎖分類對應-231238">2.3 鎖分類（對應 2.3.1~2.3.8）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">鎖分類樹狀圖：
+
+                              ┌──────────┐
+                              │   鎖     │
+                              └────┬─────┘
+         ┌──────────┬──────────────┼──────────────┬──────────────┐
+         ▼          ▼              ▼              ▼              ▼
+    ┌─────────┐ ┌─────────┐ ┌───────────┐ ┌──────────┐ ┌─────────────┐
+    │悲觀/樂觀 │ │公平/非公平│ │可重入/不可│ │共享/獨占 │ │  自旋/阻塞  │
+    └────┬────┘ └────┬────┘ │重入       │ └────┬─────┘ └──────┬──────┘
+         │           │      └─────┬─────┘       │              │
+    ┌────┴────┐  ┌───┴────┐  ┌───┴────┐    ┌───┴────┐    ┌───┴────┐
+    │悲觀鎖   │  │公平鎖   │  │可重入鎖│    │共享鎖  │    │自旋鎖  │
+    │先鎖再操作│  │FIFO 排隊│  │同線程可│    │多讀者  │    │忙等    │
+    │         │  │         │  │多次獲得│    │同時持有│    │適合短臨│
+    │例：     │  │例：     │  │        │    │        │    │界區    │
+    │Mutex    │  │Java     │  │例：    │    │例：    │    │        │
+    │         │  │ReentrantLock│Java  │    │RWLock  │    │        │
+    │         │  │(fair=true)│ Reentrant│  │ReadLock│    │        │
+    └─────────┘  └─────────┘  │Lock   │    └────────┘    └────────┘
+    ┌─────────┐  ┌─────────┐  └────────┘   ┌────────┐    ┌────────┐
+    │樂觀鎖   │  │非公平鎖  │  ┌────────┐   │獨占鎖  │    │阻塞鎖  │
+    │先操作後  │  │可插隊   │  │不可重入│   │同時只有│    │掛起線程│
+    │校驗衝突  │  │         │  │同線程再│   │一個持有│    │適合長臨│
+    │         │  │例：     │  │次獲取  │   │        │    │界區    │
+    │例：CAS/ │  │Java     │  │→ 死鎖  │   │例：    │    │        │
+    │MVCC     │  │Reentrant│  │        │   │Mutex/  │    │例：OS  │
+    │         │  │Lock     │  │        │   │WriteLock│   │futex   │
+    └─────────┘  │(預設)   │  └────────┘   └────────┘    └────────┘
+                 └─────────┘
+
+各鎖使用場景選擇指引：
+
+  ┌────────────────┬─────────────────────────────────────────────┐
+  │  場景           │  推薦鎖類型                                  │
+  ├────────────────┼─────────────────────────────────────────────┤
+  │  讀多寫少       │  共享讀鎖（RWLock）                           │
+  │  衝突少         │  樂觀鎖（CAS/MVCC）                          │
+  │  衝突多         │  悲觀鎖（Mutex）                             │
+  │  臨界區極短     │  自旋鎖（SpinLock）                           │
+  │  臨界區較長     │  阻塞鎖（OS Mutex）                           │
+  │  需要遞迴獲取   │  可重入鎖（ReentrantLock）                    │
+  └────────────────┴─────────────────────────────────────────────┘
+</code></pre>
+<ul>
+<li>悲觀/樂觀</li>
+<li>公平/非公平</li>
+<li>可重入/不可重入</li>
+<li>可中斷/不可中斷</li>
+<li>共享/獨占</li>
+<li>自旋/阻塞</li>
+</ul>
+<p>白話例子：</p>
+<ul>
+<li>公平鎖像銀行抽號，先到先得。</li>
+<li>非公平鎖像空位誰搶到誰先辦。</li>
+<li>可重入鎖像房間主人可以再進自己的房間；不可重入則會把自己鎖在外面。</li>
+</ul>
+<h2 id="示意圖"><a class="header" href="#示意圖">示意圖</a></h2>
+<pre><code class="language-text">競態條件（Race Condition）導致丟失更新：
+
+  時間軸 ─────────────────────────────────────────────────►
+         Step 1          Step 2          Step 3
+  T1: ──►[read x=0] ──► [計算 0+1=1] ──►           [write x=1] ──►
+  T2: ──►[read x=0] ────────────────────►[計算 0+1=1] ──► [write x=1]
+
+  預期：x = 2
+  實際：x = 1  ← T1 的更新被 T2 覆蓋，丟失一次遞增！
+</code></pre>
+<h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
+<p>無鎖版 vs 加鎖版 counter++（展示 race condition）。</p>
+<h3 id="cpthread--無鎖加鎖對比"><a class="header" href="#cpthread--無鎖加鎖對比">C（pthread + 無鎖/加鎖對比）</a></h3>
+<pre><code class="language-c">#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#define THREADS 4
+#define ITER    100000
+
+long unsafe_counter = 0;
+long safe_counter = 0;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+void *unsafe_inc(void *arg) {
+    for (int i = 0; i &lt; ITER; i++)
+        unsafe_counter++;   /* 非原子，有競態 */
+    return NULL;
+}
+
+void *safe_inc(void *arg) {
+    for (int i = 0; i &lt; ITER; i++) {
+        pthread_mutex_lock(&amp;lock);
+        safe_counter++;     /* 加鎖保護，結果正確 */
+        pthread_mutex_unlock(&amp;lock);
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t tid[THREADS];
+    for (int i = 0; i &lt; THREADS; i++)
+        pthread_create(&amp;tid[i], NULL, unsafe_inc, NULL);
+    for (int i = 0; i &lt; THREADS; i++)
+        pthread_join(tid[i], NULL);
+    printf("unsafe_counter = %ld (expected %d)\n", unsafe_counter, THREADS * ITER);
+
+    for (int i = 0; i &lt; THREADS; i++)
+        pthread_create(&amp;tid[i], NULL, safe_inc, NULL);
+    for (int i = 0; i &lt; THREADS; i++)
+        pthread_join(tid[i], NULL);
+    printf("safe_counter   = %ld (expected %d)\n", safe_counter, THREADS * ITER);
+    return 0;
+}
+</code></pre>
+<pre><code class="language-bash">gcc -O0 -o race race.c -lpthread &amp;&amp; ./race
+</code></pre>
+<h3 id="cstdthread--stdmutex"><a class="header" href="#cstdthread--stdmutex">C++（std::thread + std::mutex）</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;mutex&gt;
+#include &lt;vector&gt;
+
+const int THREADS = 4, ITER = 100000;
+long unsafe_counter = 0;
+long safe_counter = 0;
+std::mutex lock;
+
+void unsafe_inc() {
+    for (int i = 0; i &lt; ITER; i++)
+        unsafe_counter++;
+}
+
+void safe_inc() {
+    for (int i = 0; i &lt; ITER; i++) {
+        std::lock_guard&lt;std::mutex&gt; g(lock);
+        safe_counter++;
+    }
+}
+
+void run(void(*fn)()) {
+    std::vector&lt;std::thread&gt; ts;
+    for (int i = 0; i &lt; THREADS; i++) ts.emplace_back(fn);
+    for (auto &amp;t : ts) t.join();
+}
+
+int main() {
+    run(unsafe_inc);
+    std::cout &lt;&lt; "unsafe: " &lt;&lt; unsafe_counter &lt;&lt; " (expected " &lt;&lt; THREADS*ITER &lt;&lt; ")\n";
+    run(safe_inc);
+    std::cout &lt;&lt; "safe:   " &lt;&lt; safe_counter   &lt;&lt; " (expected " &lt;&lt; THREADS*ITER &lt;&lt; ")\n";
+}
+</code></pre>
+<pre><code class="language-bash">g++ -std=c++17 -O0 -o race race.cpp -lpthread &amp;&amp; ./race
+</code></pre>
+<h3 id="ruststdthread--mutex-vs-atomici64"><a class="header" href="#ruststdthread--mutex-vs-atomici64">Rust（std::thread + Mutex vs AtomicI64）</a></h3>
+<pre><pre class="playground"><code class="language-rust">use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicI64, Ordering};
+use std::thread;
+
+const THREADS: usize = 4;
+const ITER: i64 = 100_000;
+
+fn main() {
+    // 加鎖版：結果正確
+    let safe = Arc::new(Mutex::new(0i64));
+    let mut handles = vec![];
+    for _ in 0..THREADS {
+        let c = Arc::clone(&amp;safe);
+        handles.push(thread::spawn(move || {
+            for _ in 0..ITER { *c.lock().unwrap() += 1; }
+        }));
+    }
+    for h in handles { h.join().unwrap(); }
+    println!("safe (mutex):  {} (expected {})", *safe.lock().unwrap(), THREADS as i64 * ITER);
+
+    // 原子版：無鎖且正確
+    let atomic = Arc::new(AtomicI64::new(0));
+    let mut handles = vec![];
+    for _ in 0..THREADS {
+        let c = Arc::clone(&amp;atomic);
+        handles.push(thread::spawn(move || {
+            for _ in 0..ITER { c.fetch_add(1, Ordering::Relaxed); }
+        }));
+    }
+    for h in handles { h.join().unwrap(); }
+    println!("safe (atomic): {} (expected {})", atomic.load(Ordering::SeqCst), THREADS as i64 * ITER);
+}</code></pre></pre>
+<pre><code class="language-bash">cargo run
+</code></pre>
+<h3 id="gogoroutine--syncmutex-vs-atomic"><a class="header" href="#gogoroutine--syncmutex-vs-atomic">Go（goroutine + sync.Mutex vs atomic）</a></h3>
+<pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "sync"
+    "sync/atomic"
+)
+
+const threads, iter = 4, 100_000
+
+func main() {
+    // 無鎖（競態，結果通常偏小）
+    var unsafe_counter int64
+    var wg sync.WaitGroup
+    wg.Add(threads)
+    for i := 0; i &lt; threads; i++ {
+        go func() {
+            defer wg.Done()
+            for j := 0; j &lt; iter; j++ {
+                unsafe_counter++ // data race!
+            }
+        }()
+    }
+    wg.Wait()
+    fmt.Printf("unsafe:  %d (expected %d)\n", unsafe_counter, threads*iter)
+
+    // 原子版（無鎖且正確）
+    var safe_counter int64
+    wg.Add(threads)
+    for i := 0; i &lt; threads; i++ {
+        go func() {
+            defer wg.Done()
+            for j := 0; j &lt; iter; j++ {
+                atomic.AddInt64(&amp;safe_counter, 1)
+            }
+        }()
+    }
+    wg.Wait()
+    fmt.Printf("safe:    %d (expected %d)\n", safe_counter, threads*iter)
+}
+</code></pre>
+<pre><code class="language-bash">go run main.go
+# 加 -race 旗標可偵測競態：
+go run -race main.go
+</code></pre>
+<h3 id="pythonthreading--lock-對比"><a class="header" href="#pythonthreading--lock-對比">Python（threading + Lock 對比）</a></h3>
+<pre><code class="language-python">import threading
+
+THREADS, ITER = 4, 100_000
+
+unsafe_counter = 0
+safe_counter = 0
+lock = threading.Lock()
+
+def unsafe_inc():
+    global unsafe_counter
+    for _ in range(ITER):
+        unsafe_counter += 1   # Python GIL 下通常安全，但不保證
+
+def safe_inc():
+    global safe_counter
+    for _ in range(ITER):
+        with lock:
+            safe_counter += 1
+
+def run_threads(fn):
+    ts = [threading.Thread(target=fn) for _ in range(THREADS)]
+    for t in ts: t.start()
+    for t in ts: t.join()
+
+run_threads(unsafe_inc)
+print(f"unsafe: {unsafe_counter} (expected {THREADS * ITER})")
+run_threads(safe_inc)
+print(f"safe:   {safe_counter} (expected {THREADS * ITER})")
+</code></pre>
+<pre><code class="language-bash">python3 race.py
+</code></pre>
+<h2 id="完整專案級範例python"><a class="header" href="#完整專案級範例python">完整專案級範例（Python）</a></h2>
+<p>檔案：<code>examples/python/ch02.py</code></p>
+<pre><code class="language-bash">python3 examples/python/ch02.py
+</code></pre>
+<pre><code class="language-python">"""Chapter 02: race risk and lock.
+
+展示：
+1. 無鎖版 counter（可能有競態，Python GIL 有時會掩蓋，但 C/Rust/Go 明確可見）
+2. 有鎖版 counter（結果正確，永遠等於 THREADS * ITER）
+"""
+import threading
+
+THREADS = 4
+ITER = 50_000
+
+counter = 0
+lock = threading.Lock()
+
+
+def inc(n: int):
+    global counter
+    for _ in range(n):
+        with lock:
+            counter += 1
+
+
+if __name__ == "__main__":
+    threads = [threading.Thread(target=inc, args=(ITER,)) for _ in range(THREADS)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    print(f"counter = {counter} (expected {THREADS * ITER})")
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch01-os-scheduling.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch03-core-problems.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch01-os-scheduling.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch03-core-problems.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

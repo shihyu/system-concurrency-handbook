@@ -1,0 +1,659 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>第18章 AQS 可重入鎖實戰 - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">高並發編程通用概念（跨 Java/C++/Rust/Go）</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="第18章-aqs-可重入鎖實戰"><a class="header" href="#第18章-aqs-可重入鎖實戰">第18章 AQS 可重入鎖實戰</a></h1>
+<h2 id="181-目標"><a class="header" href="#181-目標">18.1 目標</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">手寫鎖 vs OS Mutex 功能對比
+
+  ┌──────────────────────┬──────────────────┬──────────────────────┐
+  │       功能           │   手寫可重入鎖   │     OS Mutex         │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  互斥保護            │  ✓               │  ✓                   │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  可重入              │  ✓ 計數器追蹤    │  △ 依 OS/語言而定    │
+  │  (同執行緒多次鎖)    │    state 欄位    │    pthread 預設不可  │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  可阻塞等待          │  ✓ park/unpark   │  ✓                   │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  可喚醒              │  ✓ unpark 精確   │  ✓                   │
+  │                      │    喚醒指定執行緒│                      │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  可超時              │  ✓ 需自行實作    │  △ 部分 OS 支援      │
+  │  (tryLock + timeout) │    計時邏輯      │    timedwait         │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  可中斷              │  ✓ 需自行實作    │  △ 依實作而定        │
+  │  (interrupt 喚醒)    │    中斷標記      │                      │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  公平性控制          │  ✓ 可選公平/    │  ✗ 通常 OS 決定      │
+  │                      │    非公平佇列   │                      │
+  ├──────────────────────┼──────────────────┼──────────────────────┤
+  │  自訂條件變數數量    │  ✓ 多個 Condition│  △ 有限              │
+  └──────────────────────┴──────────────────┴──────────────────────┘
+
+  目標：自己做出「可重入 + 可阻塞等待 + 可喚醒」的鎖，
+        同時支援超時與中斷路徑。
+</code></pre>
+<p>自己做出「可重入 + 可阻塞等待 + 可喚醒」的鎖。</p>
+<h2 id="182-狀態定義"><a class="header" href="#182-狀態定義">18.2 狀態定義</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">可重入鎖的三個核心欄位
+
+  ┌──────────────────────────────────────────────────────────┐
+  │                   ReentrantLock 結構                      │
+  │                                                          │
+  │  ┌──────────────────────────────────────────────────┐   │
+  │  │  state: AtomicInt                                │   │
+  │  │                                                  │   │
+  │  │   0    → 鎖空閒（free）                          │   │
+  │  │   1    → 被持有一次                              │   │
+  │  │   2    → 同一執行緒重入兩次                      │   │
+  │  │   n    → 同一執行緒重入 n 次                     │   │
+  │  │                                                  │   │
+  │  │  作用：追蹤重入深度，state→0 才真正釋放鎖        │   │
+  │  └──────────────────────────────────────────────────┘   │
+  │                                                          │
+  │  ┌──────────────────────────────────────────────────┐   │
+  │  │  owner: Thread (nullable)                        │   │
+  │  │                                                  │   │
+  │  │   null     → 無人持有                            │   │
+  │  │   Thread A → Thread A 持有                       │   │
+  │  │                                                  │   │
+  │  │  作用：判斷當前執行緒是否為持有者                 │   │
+  │  │        若是 → state++（重入）                    │   │
+  │  │        若否 → 進入等待佇列                       │   │
+  │  └──────────────────────────────────────────────────┘   │
+  │                                                          │
+  │  ┌──────────────────────────────────────────────────┐   │
+  │  │  waiters: Queue&lt;Thread&gt;                          │   │
+  │  │                                                  │   │
+  │  │   [Thread B] → [Thread C] → [Thread D] → null   │   │
+  │  │                                                  │   │
+  │  │  作用：FIFO 佇列儲存等待的執行緒                  │   │
+  │  │        公平鎖：按入隊順序喚醒                    │   │
+  │  │        非公平鎖：允許搶占                        │   │
+  │  └──────────────────────────────────────────────────┘   │
+  └──────────────────────────────────────────────────────────┘
+
+  三個欄位的協作：
+
+  owner=Thread A, state=2, waiters=[B, C]
+
+  Thread A 再次 lock() → owner==A → state=3（重入）
+  Thread B 呼叫 lock() → owner!=B → 入隊，park()
+</code></pre>
+<ul>
+<li><code>state</code>: 重入次數</li>
+<li><code>owner</code>: 持有者執行緒</li>
+<li>queue: 等待節點</li>
+</ul>
+<h2 id="183-獲取與釋放對應-18311833"><a class="header" href="#183-獲取與釋放對應-18311833">18.3 獲取與釋放（對應 18.3.1~18.3.3）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">可重入鎖狀態機
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │  lock() 流程                                                 │
+  └─────────────────────────────────────────────────────────────┘
+
+  Thread 呼叫 lock()
+         │
+         ▼
+  ┌──────────────────┐   是    ┌──────────────────────┐
+  │ owner == current │ ──────► │  state++（重入）      │──► 返回
+  │ 執行緒？         │         │  state=1→2→3→...      │
+  └──────┬───────────┘         └──────────────────────┘
+         │ 否
+         ▼
+  ┌──────────────────┐   是    ┌──────────────────────┐
+  │  state == 0？    │ ──────► │  CAS(state, 0, 1)    │
+  │  鎖空閒？        │         │  owner = current      │──► 進入臨界區
+  └──────┬───────────┘         └──────────────────────┘
+         │ 否（鎖被他人持有）
+         ▼
+  ┌──────────────────┐
+  │  入隊（enqueue） │
+  │  park()睡眠等待  │◄──────────────────────────────────┐
+  └──────┬───────────┘                                   │
+         │ 被 unpark() 喚醒                               │
+         ▼                                               │
+  ┌──────────────────┐   失敗（被搶占）                   │
+  │  retry: 重新嘗試 │ ─────────────────────────────────►┘
+  │  CAS(0→1)        │
+  └──────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │  unlock() 流程                                               │
+  └─────────────────────────────────────────────────────────────┘
+
+  Thread 呼叫 unlock()
+         │
+         ▼
+  ┌──────────────────────────────────────────────┐
+  │  assert owner == current（必須是持有者才能解鎖）│
+  └──────────────────────────────────────────────┘
+         │
+         ▼
+         state--
+         │
+         ├─── state &gt; 0 ──► 仍有重入層，繼續持有鎖，返回
+         │
+         └─── state == 0 ──► 真正釋放
+                    │
+                    ▼
+             owner = null
+                    │
+                    ▼
+         ┌──────────────────────┐
+         │  waiters 佇列有人？  │
+         └──────┬───────────────┘
+                │ 有              │ 無
+                ▼                 ▼
+         取出隊首 Thread        鎖空閒
+         unpark() 喚醒          等待下次競爭
+
+  重入計數示意：
+  ┌──────────────────────────────────────────────────┐
+  │  outer() {          inner() {                    │
+  │    lock()  state=1    lock()  state=2            │
+  │    inner()            ...                        │
+  │    unlock() state=1   unlock() state=1           │
+  │  }                  }                            │
+  │                                                  │
+  │  state: 1 ──► 2 ──► 1 ──► 0（真正釋放）         │
+  └──────────────────────────────────────────────────┘
+</code></pre>
+<ul>
+<li>owner 再次進入：<code>state++</code></li>
+<li>其他執行緒：排隊等待</li>
+<li>釋放：<code>state--</code> 到 0 才真正解鎖</li>
+</ul>
+<h2 id="184-測試面向"><a class="header" href="#184-測試面向">18.4 測試面向</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">可重入鎖測試矩陣
+
+  ┌─────────────────────┬────────────────────────┬────────────────────────┐
+  │     測試面向        │     測試方法            │     驗收標準           │
+  ├─────────────────────┼────────────────────────┼────────────────────────┤
+  │  可重入正確性       │  同一執行緒連續 lock()  │  不死鎖                │
+  │                     │  N 次後 unlock() N 次   │  state 歸零後其他執行  │
+  │                     │  驗證臨界區資料一致性   │  緒可正常獲得鎖        │
+  ├─────────────────────┼────────────────────────┼────────────────────────┤
+  │  競爭公平性         │  M 個執行緒並發競爭     │  每個執行緒等待時間    │
+  │                     │  記錄各自獲鎖時間       │  差異在合理範圍內      │
+  │                     │  計算標準差             │  （公平模式）          │
+  ├─────────────────────┼────────────────────────┼────────────────────────┤
+  │  中斷路徑           │  執行緒等待鎖時         │  中斷後執行緒正確退出  │
+  │                     │  從另一執行緒發送中斷   │  不留殭屍              │
+  │                     │  驗證等待執行緒退出     │  鎖狀態保持一致        │
+  ├─────────────────────┼────────────────────────┼────────────────────────┤
+  │  超時路徑           │  tryLock(timeout=100ms) │  超時後返回 false      │
+  │                     │  持鎖者睡眠 200ms       │  不死鎖                │
+  │                     │  等待者應超時返回       │  計時誤差 &lt; 10ms       │
+  ├─────────────────────┼────────────────────────┼────────────────────────┤
+  │  多條件變數         │  producer/consumer 模型 │  signal 精確喚醒一個   │
+  │                     │  condition.await()      │  signalAll 喚醒全部    │
+  │                     │  condition.signal()     │  不丟失喚醒            │
+  ├─────────────────────┼────────────────────────┼────────────────────────┤
+  │  壓力測試           │  1000 執行緒 × 10000    │  計數器最終值正確      │
+  │                     │  次 lock/unlock         │  無資料競態            │
+  │                     │  原子計數器累加         │  無死鎖                │
+  └─────────────────────┴────────────────────────┴────────────────────────┘
+
+  測試覆蓋路徑圖：
+
+  lock()
+  ├─ owner == self ─► state++ ─► [可重入路徑] ✓
+  ├─ state == 0    ─► CAS 成功 ─► [首次獲取路徑] ✓
+  ├─ state == 0    ─► CAS 失敗 ─► retry ─► [競爭路徑] ✓
+  ├─ state &gt; 0     ─► park() ─► unpark ─► [等待喚醒路徑] ✓
+  ├─ state &gt; 0     ─► park() ─► interrupt ─► [中斷路徑] ✓
+  └─ state &gt; 0     ─► tryLock + timeout ─► [超時路徑] ✓
+</code></pre>
+<ul>
+<li>可重入正確性</li>
+<li>競爭時公平性/吞吐</li>
+<li>中斷與超時路徑</li>
+</ul>
+<h2 id="示意圖"><a class="header" href="#示意圖">示意圖</a></h2>
+<pre><code class="language-text">owner=T1, state=2 (重入2次)
+T1 unlock -&gt; state=1
+T1 unlock -&gt; state=0 -&gt; 喚醒下一個
+</code></pre>
+<h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
+<h3 id="c--pthread_mutex_t-遞迴鎖pthread_mutex_recursive"><a class="header" href="#c--pthread_mutex_t-遞迴鎖pthread_mutex_recursive">C — pthread_mutex_t 遞迴鎖（PTHREAD_MUTEX_RECURSIVE）</a></h3>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+#include &lt;pthread.h&gt;
+
+static pthread_mutex_t mu;
+static int shared_value = 0;
+
+void inner_work(void) {
+    pthread_mutex_lock(&amp;mu);      /* 重入：同執行緒第二次鎖 */
+    shared_value += 10;
+    printf("inner: shared_value = %d\n", shared_value);
+    pthread_mutex_unlock(&amp;mu);
+}
+
+void outer_work(void) {
+    pthread_mutex_lock(&amp;mu);      /* 第一次鎖 */
+    shared_value += 1;
+    printf("outer before inner: shared_value = %d\n", shared_value);
+    inner_work();                 /* 呼叫 inner，不應死鎖 */
+    printf("outer after inner: shared_value = %d\n", shared_value);
+    pthread_mutex_unlock(&amp;mu);
+}
+
+int main(void) {
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&amp;attr);
+    pthread_mutexattr_settype(&amp;attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&amp;mu, &amp;attr);
+    pthread_mutexattr_destroy(&amp;attr);
+
+    pthread_t t1, t2;
+    pthread_create(&amp;t1, NULL, (void *(*)(void *))outer_work, NULL);
+    pthread_create(&amp;t2, NULL, (void *(*)(void *))outer_work, NULL);
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    printf("最終 shared_value = %d (expected 22)\n", shared_value);
+    pthread_mutex_destroy(&amp;mu);
+    return 0;
+}
+</code></pre>
+<h3 id="c--stdrecursive_mutex-可重入鎖"><a class="header" href="#c--stdrecursive_mutex-可重入鎖">C++ — std::recursive_mutex 可重入鎖</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;mutex&gt;
+#include &lt;thread&gt;
+#include &lt;vector&gt;
+
+std::recursive_mutex rmu;
+int shared_value = 0;
+
+void inner_work() {
+    std::lock_guard&lt;std::recursive_mutex&gt; lk(rmu);  /* 重入 */
+    shared_value += 10;
+    std::cout &lt;&lt; "inner: " &lt;&lt; shared_value &lt;&lt; "\n";
+}
+
+void outer_work() {
+    std::lock_guard&lt;std::recursive_mutex&gt; lk(rmu);  /* 首次鎖 */
+    shared_value += 1;
+    inner_work();  /* 同執行緒再次鎖，不應死鎖 */
+}
+
+int main() {
+    std::vector&lt;std::thread&gt; threads;
+    for (int i = 0; i &lt; 4; i++)
+        threads.emplace_back(outer_work);
+    for (auto &amp;t : threads)
+        t.join();
+    std::cout &lt;&lt; "最終 shared_value = " &lt;&lt; shared_value
+              &lt;&lt; " (expected 44)\n";
+}
+</code></pre>
+<h3 id="rust--parking_lotreentrantmutex-可重入鎖"><a class="header" href="#rust--parking_lotreentrantmutex-可重入鎖">Rust — parking_lot::ReentrantMutex 可重入鎖</a></h3>
+<pre><pre class="playground"><code class="language-rust">use parking_lot::ReentrantMutex;
+use std::cell::Cell;
+use std::sync::Arc;
+use std::thread;
+
+fn inner_work(lock: &amp;ReentrantMutex&lt;Cell&lt;i32&gt;&gt;) {
+    let guard = lock.lock();          /* 重入：同執行緒第二次 */
+    guard.set(guard.get() + 10);
+    println!("inner: {}", guard.get());
+}
+
+fn outer_work(lock: Arc&lt;ReentrantMutex&lt;Cell&lt;i32&gt;&gt;&gt;) {
+    let guard = lock.lock();          /* 首次鎖 */
+    guard.set(guard.get() + 1);
+    drop(guard);                      /* Rust 需手動 drop 才能重入 */
+    inner_work(&amp;lock);
+}
+
+fn main() {
+    let lock = Arc::new(ReentrantMutex::new(Cell::new(0)));
+    let mut handles = vec![];
+    for _ in 0..4 {
+        let l = Arc::clone(&amp;lock);
+        handles.push(thread::spawn(move || outer_work(l)));
+    }
+    for h in handles { h.join().unwrap(); }
+    println!("最終值 = {}", lock.lock().get());
+}</code></pre></pre>
+<h3 id="go--syncmutex--輔助函式go-無原生-recursive-mutex用呼叫鏈迴避"><a class="header" href="#go--syncmutex--輔助函式go-無原生-recursive-mutex用呼叫鏈迴避">Go — sync.Mutex + 輔助函式（Go 無原生 recursive mutex，用呼叫鏈迴避）</a></h3>
+<pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+// Go 的 sync.Mutex 不可重入，正確做法是把鎖傳遞給子函式
+// 而非在子函式重複 Lock 同一把鎖
+type ReentrantGuard struct {
+    mu    sync.Mutex
+    owner int64
+    depth int
+    once  sync.Mutex
+}
+
+var mu sync.Mutex
+var sharedValue int
+
+// outer 持鎖後直接呼叫 inner（不再重複鎖）
+func inner(val *int) {
+    *val += 10
+    fmt.Printf("inner: shared_value = %d\n", *val)
+}
+
+func outer() {
+    mu.Lock()
+    defer mu.Unlock()
+    sharedValue += 1
+    inner(&amp;sharedValue) // inner 不重複 Lock，由 outer 持有鎖
+}
+
+func main() {
+    var wg sync.WaitGroup
+    for i := 0; i &lt; 4; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            outer()
+        }()
+    }
+    wg.Wait()
+    fmt.Printf("最終 shared_value = %d (expected 44)\n", sharedValue)
+}
+</code></pre>
+<h3 id="python--threadingrlock-可重入鎖"><a class="header" href="#python--threadingrlock-可重入鎖">Python — threading.RLock 可重入鎖</a></h3>
+<pre><code class="language-python">"""Chapter 18: reentrant lock — outer calls inner, both lock same RLock."""
+import threading
+
+rlock = threading.RLock()
+shared_value = 0
+
+
+def inner_work():
+    with rlock:           # RLock 允許同執行緒第二次進入
+        global shared_value
+        shared_value += 10
+        print(f"inner: shared_value = {shared_value}")
+
+
+def outer_work():
+    with rlock:           # 首次獲得鎖
+        global shared_value
+        shared_value += 1
+        inner_work()      # 同執行緒再次 with rlock，不應死鎖
+
+
+def main():
+    threads = [threading.Thread(target=outer_work) for _ in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    print(f"最終 shared_value = {shared_value} (expected 44)")
+    assert shared_value == 44, "RLock 可重入失敗！"
+    print("通過：RLock 可重入，outer 呼叫 inner 不死鎖")
+
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+<h2 id="完整專案級範例python"><a class="header" href="#完整專案級範例python">完整專案級範例（Python）</a></h2>
+<p>檔案：<code>examples/python/ch18.py</code></p>
+<pre><code class="language-bash">python3 examples/python/ch18.py
+</code></pre>
+<pre><code class="language-python">"""Chapter 18: reentrant lock."""
+import threading
+
+r = threading.RLock()
+
+
+def outer():
+    with r:
+        inner()
+
+
+def inner():
+    with r:
+        print("reentered")
+
+
+if __name__ == "__main__":
+    outer()
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch17-rwlock-cache-practice.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch19-distributed-lock.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch17-rwlock-cache-practice.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch19-distributed-lock.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

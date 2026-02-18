@@ -1,0 +1,695 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>第10章 CAS - 高並發編程通用概念（跨 Java/C++/Rust/Go）</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">高並發編程通用概念（跨 Java/C++/Rust/Go）</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="第10章-cas"><a class="header" href="#第10章-cas">第10章 CAS</a></h1>
+<h2 id="101-cas-基本模型"><a class="header" href="#101-cas-基本模型">10.1 CAS 基本模型</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii"><a class="header" href="#本小節示意圖ascii">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  CAS（Compare-And-Swap）基本模型
+  ════════════════════════════════════════════════════════
+
+  函數語義：
+  ┌─────────────────────────────────────────────────────┐
+  │  bool CAS(addr, expected, new_val) {                │
+  │      if (*addr == expected) {                        │
+  │          *addr = new_val;                            │
+  │          return true;    // 交換成功                 │
+  │      } else {                                        │
+  │          return false;   // 交換失敗（值已被改）     │
+  │      }                                               │
+  │  }                                                   │
+  │  ⚠ 上面的 if-then 是原子執行，不可被打斷            │
+  └─────────────────────────────────────────────────────┘
+
+  執行流程示意：
+  ┌──────────────────────────────────────────────────────┐
+  │                                                      │
+  │  記憶體位址 addr                                     │
+  │  ┌──────────┐                                        │
+  │  │  *addr   │ = 10（當前值）                         │
+  │  └──────────┘                                        │
+  │       │                                              │
+  │       │ CAS(addr, expected=10, new_val=20)           │
+  │       ▼                                              │
+  │  ┌─────────────────────────────────────────────┐     │
+  │  │  原子比較：*addr(10) == expected(10) ?       │     │
+  │  │  ├─ 是（成功路徑）                          │     │
+  │  │  │   *addr = 20                             │     │
+  │  │  │   return true ✅                         │     │
+  │  │  │   ┌──────────┐                           │     │
+  │  │  │   │  *addr   │ = 20                      │     │
+  │  │  │   └──────────┘                           │     │
+  │  │  │                                          │     │
+  │  │  └─ 否（失敗路徑，*addr 已被其他執行緒改為 15）   │
+  │  │      return false ❌                        │     │
+  │  │      呼叫者需要重新讀取並重試               │     │
+  │  └─────────────────────────────────────────────┘     │
+  │                                                      │
+  │  硬體層：CMPXCHG 指令（x86）                         │
+  │  ┌─────────────────────────────────────────────┐     │
+  │  │  LOCK CMPXCHG [mem], reg                    │     │
+  │  │  ├─ LOCK 前綴：鎖定快取行/記憶體匯流排     │     │
+  │  │  ├─ 比較 EAX 與 [mem]                       │     │
+  │  │  ├─ 相等 → [mem] = reg（ZF=1）              │     │
+  │  │  └─ 不等 → EAX = [mem]（ZF=0，讓呼叫者重試）│     │
+  │  └─────────────────────────────────────────────┘     │
+  └──────────────────────────────────────────────────────┘
+</code></pre>
+<p>Compare-And-Swap：比較並交換。</p>
+<h2 id="102-底層支持對應-10211022"><a class="header" href="#102-底層支持對應-10211022">10.2 底層支持（對應 10.2.1~10.2.2）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-1"><a class="header" href="#本小節示意圖ascii-1">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  Intel x86 LOCK CMPXCHG vs ARM LL/SC
+  ════════════════════════════════════════════════════════
+
+  Intel x86 — LOCK CMPXCHG（單條原子指令）
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  CPU 執行 LOCK CMPXCHG                              │
+  │       │                                             │
+  │       ▼                                             │
+  │  ┌──────────────────────────────────────────────┐  │
+  │  │  Step 1：LOCK 前綴                           │  │
+  │  │  鎖定對應快取行（Cache Line Lock）           │  │
+  │  │  或在多 CPU 系統鎖定記憶體匯流排             │  │
+  │  └─────────────────────┬────────────────────────┘  │
+  │                         │                           │
+  │                         ▼                           │
+  │  ┌──────────────────────────────────────────────┐  │
+  │  │  Step 2：原子比較                            │  │
+  │  │  compare EAX（expected）with [mem]           │  │
+  │  │  ├─ 相等 → exchange [mem] = new_reg          │  │
+  │  │  │         ZF = 1（表示成功）                │  │
+  │  │  └─ 不等 → EAX = [mem]（取回現值）          │  │
+  │  │            ZF = 0（表示失敗）                │  │
+  │  └─────────────────────┬────────────────────────┘  │
+  │                         │                           │
+  │                         ▼                           │
+  │  ┌──────────────────────────────────────────────┐  │
+  │  │  Step 3：UNLOCK                              │  │
+  │  │  釋放快取行/匯流排鎖                         │  │
+  │  └──────────────────────────────────────────────┘  │
+  │  整個過程不可中斷，其他 CPU 必須等待             │  │
+  └─────────────────────────────────────────────────────┘
+
+  ARM — LL/SC（Load-Link / Store-Conditional，可能重試）
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  retry:                                             │
+  │       │                                             │
+  │       ▼                                             │
+  │  ┌──────────────────────────────────────────────┐  │
+  │  │  LDREX r0, [addr]  ← Load-Link              │  │
+  │  │  記錄 addr 的「獨占監視器」標記              │  │
+  │  │  r0 = *addr（讀取當前值）                   │  │
+  │  └─────────────────────┬────────────────────────┘  │
+  │                         │                           │
+  │                         ▼ 計算新值                  │
+  │                    r1 = r0 + 1                      │
+  │                         │                           │
+  │                         ▼                           │
+  │  ┌──────────────────────────────────────────────┐  │
+  │  │  STREX result, r1, [addr]  ← Store-Conditional│ │
+  │  │  若獨占監視器標記仍有效（無其他寫入）        │  │
+  │  │  ├─ 寫入成功：*addr = r1，result = 0         │  │
+  │  │  └─ 寫入失敗：result = 1（有其他 CPU 寫入）  │  │
+  │  └─────────────────────┬────────────────────────┘  │
+  │                         │                           │
+  │             ┌───────────┴───────────┐               │
+  │             ▼                       ▼               │
+  │        result == 0             result == 1          │
+  │        成功，完成              失敗，回到 retry     │
+  │                                ────────────────►    │
+  │  LL/SC 通過重試避免總線鎖，對多核效能更友好        │  │
+  └─────────────────────────────────────────────────────┘
+</code></pre>
+<p>依賴 CPU 原子指令；Java <code>Unsafe/VarHandle</code>、C++ <code>atomic</code>、Rust <code>Atomic*</code>、Go <code>sync/atomic</code>。</p>
+<h2 id="103-cas-實作計數器對應-10311033"><a class="header" href="#103-cas-實作計數器對應-10311033">10.3 CAS 實作計數器（對應 10.3.1~10.3.3）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-2"><a class="header" href="#本小節示意圖ascii-2">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  CAS 自旋計數器流程
+  ════════════════════════════════════════════════════════
+
+  單次遞增流程（樂觀自旋）：
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │  ┌─────────────────────────────────────────────┐   │
+  │  │  Step 1：load old = *counter                │   │
+  │  │  讀取當前值（此時 counter = 5）              │   │
+  │  └────────────────────────┬────────────────────┘   │
+  │                            │ old = 5                │
+  │                            ▼                        │
+  │  ┌─────────────────────────────────────────────┐   │
+  │  │  Step 2：new = old + 1 = 6                  │   │
+  │  │  計算新值（純粹計算，無競爭）                │   │
+  │  └────────────────────────┬────────────────────┘   │
+  │                            │                        │
+  │                            ▼                        │
+  │  ┌─────────────────────────────────────────────┐   │
+  │  │  Step 3：CAS(*counter, old=5, new=6)        │   │
+  │  │  ├─ *counter 仍為 5 → 交換成功，counter=6  │   │
+  │  │  │   ✅ done                                │   │
+  │  │  └─ *counter 已改（別的執行緒改為 6）       │   │
+  │  │      ❌ 失敗 → 回到 Step 1 重試             │   │
+  │  └─────────────────────────────────────────────┘   │
+  │                                                     │
+  │  高競爭下的問題：                                   │
+  │  ┌─────────────────────────────────────────────┐   │
+  │  │  T1 讀 old=5 ─────────────────────────────► │   │
+  │  │  T2 讀 old=5 → CAS 成功(5→6)              │   │
+  │  │  T3 讀 old=5 → CAS 失敗，重試             │   │
+  │  │  T4 讀 old=5 → CAS 失敗，重試             │   │
+  │  │  T1      → CAS 失敗，重試                 │   │
+  │  │  ...N 個執行緒競爭，每輪只有 1 個成功      │   │
+  │  │  自旋 CPU 浪費 ∝ 執行緒數量               │   │
+  │  └─────────────────────────────────────────────┘   │
+  │  解法：LongAdder（分段計數，減少競爭）              │
+  └─────────────────────────────────────────────────────┘
+</code></pre>
+<pre><code class="language-text">do {
+  old = load(x)
+  new = old + 1
+} while (!CAS(x, old, new))
+</code></pre>
+<h2 id="104-aba-問題對應-10411043"><a class="header" href="#104-aba-問題對應-10411043">10.4 ABA 問題（對應 10.4.1~10.4.3）</a></h2>
+<!-- subsection-diagram -->
+<h3 id="本小節示意圖ascii-3"><a class="header" href="#本小節示意圖ascii-3">本小節示意圖（ASCII）</a></h3>
+<pre><code class="language-text">  ABA 問題時間軸與帶版本號解法
+  ════════════════════════════════════════════════════════
+
+  問題：CAS 只比較值，不感知中間的變化
+
+  Thread T1                   Thread T2
+  ─────────────────           ─────────────────────────
+  read: *addr = A             （暫停）
+  （準備 CAS A → B）
+        │
+        │                     read: *addr = A
+        │                     CAS(*addr, A, B) → 成功
+        │                     *addr = B
+        │
+        │                     read: *addr = B
+        │                     CAS(*addr, B, A) → 成功
+        │                     *addr = A  ← 改回 A
+        │
+        ▼
+  CAS(*addr, A, B)            （T1 繼續執行）
+  ← *addr 仍為 A，CAS 成功！
+  但 A 其實已經歷了 A→B→A 的變化
+  ⚠ T1 誤以為「什麼都沒發生」，中間的 B 被忽略
+
+  ABA 問題的後果：
+  ┌─────────────────────────────────────────────────────┐
+  │  無鎖棧場景（stack pop + push）：                   │
+  │  T1 準備 pop A（讀到 head=A, next=B）               │
+  │  T2 pop A, pop B, push A（棧頂還是A，但B丟失）      │
+  │  T1 CAS(head, A, B) 成功，但 B 已經不在棧裡！       │
+  │  → 棧結構損壞                                       │
+  └─────────────────────────────────────────────────────┘
+
+  解法：帶版本號的 CAS（Double-CAS / Stamped Reference）
+
+  時間軸（帶版本號）：
+  ┌──────────────────────────────────────────────────────┐
+  │                                                      │
+  │  初始：(value=A, version=v1)                         │
+  │                                                      │
+  │  Thread T1                   Thread T2               │
+  │  ─────────────────           ────────────────────    │
+  │  read: (A, v1)               read: (A, v1)           │
+  │  （準備 CAS）                                         │
+  │                              CAS((A,v1),(B,v2))→成功 │
+  │                              state: (B, v2)          │
+  │                                                      │
+  │                              CAS((B,v2),(A,v3))→成功 │
+  │                              state: (A, v3)  ← 版本不同│
+  │                                                      │
+  │  CAS((A,v1),(B,v2))                                  │
+  │  當前: (A, v3) ≠ expected: (A, v1)                  │
+  │  → CAS 失敗！❌                                      │
+  │  → T1 重新讀取，感知到 ABA 變化                      │
+  │                                                      │
+  │  版本號每次修改單調遞增，即使值迴圈也能區分          │
+  │  (A,v1) → (B,v2) → (A,v3)   v3 ≠ v1                │
+  └──────────────────────────────────────────────────────┘
+
+  各語言帶版本號的實現：
+  ┌──────────────────────────────────────────────────────┐
+  │  Java:  AtomicStampedReference&lt;V&gt;                    │
+  │         compareAndSet(expect, update, stamp, newStamp)│
+  │                                                      │
+  │  C++:   std::atomic&lt;std::pair&lt;T,int&gt;&gt;（128-bit CAS） │
+  │         或自訂 tagged pointer                        │
+  │                                                      │
+  │  Rust:  AtomicU64（將 value 和 version 打包）        │
+  │                                                      │
+  │  Go:    sync/atomic.CompareAndSwapUint64（打包）     │
+  └──────────────────────────────────────────────────────┘
+</code></pre>
+<p>A-&gt;B-&gt;A 會讓 CAS 誤判「沒變過」。</p>
+<p>解法：加版本號（stamp/tagged pointer）。</p>
+<h2 id="示意圖"><a class="header" href="#示意圖">示意圖</a></h2>
+<pre><code class="language-text">loop:
+  old = load
+  new = f(old)
+  if CAS(old,new) 成功 -&gt; done
+  else -&gt; retry
+</code></pre>
+<h2 id="跨語言完整範例"><a class="header" href="#跨語言完整範例">跨語言完整範例</a></h2>
+<p>主題：CAS 計數器（多執行緒自旋遞增，對比 mutex 版本）</p>
+<h3 id="cc11-atomiccas-自旋"><a class="header" href="#cc11-atomiccas-自旋">C（C11 atomic，CAS 自旋）</a></h3>
+<pre><code class="language-c">// 編譯：gcc -std=c11 -pthread -o ch10_c ch10.c
+#include &lt;stdatomic.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+
+#define THREADS 4
+#define INCREMENTS 10000
+
+static atomic_int counter = ATOMIC_VAR_INIT(0);
+
+void *cas_worker(void *arg) {
+    for (int i = 0; i &lt; INCREMENTS; i++) {
+        int old, new_val;
+        do {
+            old = atomic_load_explicit(&amp;counter, memory_order_relaxed);
+            new_val = old + 1;
+        } while (!atomic_compare_exchange_weak_explicit(
+                     &amp;counter, &amp;old, new_val,
+                     memory_order_relaxed, memory_order_relaxed));
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t threads[THREADS];
+    for (int i = 0; i &lt; THREADS; i++)
+        pthread_create(&amp;threads[i], NULL, cas_worker, NULL);
+    for (int i = 0; i &lt; THREADS; i++)
+        pthread_join(threads[i], NULL);
+    printf("counter = %d (expected %d)\n",
+           atomic_load(&amp;counter), THREADS * INCREMENTS);
+    return 0;
+}
+</code></pre>
+<h3 id="cstdatomic-compare_exchange_weak"><a class="header" href="#cstdatomic-compare_exchange_weak">C++（std::atomic compare_exchange_weak）</a></h3>
+<pre><code class="language-cpp">// 編譯：g++ -std=c++17 -pthread -o ch10_cpp ch10.cpp
+#include &lt;atomic&gt;
+#include &lt;thread&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+constexpr int THREADS = 4;
+constexpr int INCREMENTS = 10000;
+
+static std::atomic&lt;int&gt; counter{0};
+
+void cas_worker() {
+    for (int i = 0; i &lt; INCREMENTS; i++) {
+        int old = counter.load(std::memory_order_relaxed);
+        while (!counter.compare_exchange_weak(
+                   old, old + 1,
+                   std::memory_order_relaxed)) {
+            // old 自動被 compare_exchange_weak 更新為當前值
+        }
+    }
+}
+
+int main() {
+    std::vector&lt;std::thread&gt; threads;
+    for (int i = 0; i &lt; THREADS; i++)
+        threads.emplace_back(cas_worker);
+    for (auto &amp;t : threads) t.join();
+    std::cout &lt;&lt; "counter = " &lt;&lt; counter
+              &lt;&lt; " (expected " &lt;&lt; THREADS * INCREMENTS &lt;&lt; ")\n";
+}
+</code></pre>
+<h3 id="rustatomici32-fetch_add-vs-compare_exchange"><a class="header" href="#rustatomici32-fetch_add-vs-compare_exchange">Rust（AtomicI32 fetch_add vs compare_exchange）</a></h3>
+<pre><pre class="playground"><code class="language-rust">// 執行：cargo run 或 rustc ch10.rs &amp;&amp; ./ch10
+use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::Arc;
+use std::thread;
+
+const THREADS: usize = 4;
+const INCREMENTS: usize = 10_000;
+
+fn main() {
+    let counter = Arc::new(AtomicI32::new(0));
+    let mut handles = Vec::new();
+
+    for _ in 0..THREADS {
+        let counter = Arc::clone(&amp;counter);
+        handles.push(thread::spawn(move || {
+            for _ in 0..INCREMENTS {
+                // CAS 自旋遞增
+                let mut old = counter.load(Ordering::Relaxed);
+                loop {
+                    match counter.compare_exchange_weak(
+                        old, old + 1,
+                        Ordering::Relaxed, Ordering::Relaxed)
+                    {
+                        Ok(_) =&gt; break,
+                        Err(cur) =&gt; old = cur, // 更新 old 後重試
+                    }
+                }
+            }
+        }));
+    }
+    for h in handles { h.join().unwrap(); }
+    println!("counter = {} (expected {})",
+             counter.load(Ordering::SeqCst),
+             THREADS * INCREMENTS);
+}</code></pre></pre>
+<h3 id="gosyncatomic-compareandswap"><a class="header" href="#gosyncatomic-compareandswap">Go（sync/atomic CompareAndSwap）</a></h3>
+<pre><code class="language-go">// 執行：go run ch10.go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"sync/atomic"
+)
+
+const (
+	threads    = 4
+	increments = 10000
+)
+
+func main() {
+	var counter int64
+	var wg sync.WaitGroup
+
+	for i := 0; i &lt; threads; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j &lt; increments; j++ {
+				// CAS 自旋遞增
+				for {
+					old := atomic.LoadInt64(&amp;counter)
+					if atomic.CompareAndSwapInt64(&amp;counter, old, old+1) {
+						break // CAS 成功退出
+					}
+					// 失敗則重試（old 在下次 Load 時更新）
+				}
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Printf("counter = %d (expected %d)\n", counter, threads*increments)
+}
+</code></pre>
+<h3 id="python模擬-caslock-保護原子性"><a class="header" href="#python模擬-caslock-保護原子性">Python（模擬 CAS，Lock 保護原子性）</a></h3>
+<pre><code class="language-python"># 執行：python3 ch10.py
+import threading
+
+THREADS = 4
+INCREMENTS = 10000
+
+class AtomicInt:
+    def __init__(self, initial=0):
+        self._val = initial
+        self._lock = threading.Lock()
+
+    def load(self):
+        return self._val
+
+    def compare_and_swap(self, expected, new_val):
+        with self._lock:
+            if self._val == expected:
+                self._val = new_val
+                return True
+            return False
+
+counter = AtomicInt(0)
+
+def cas_worker():
+    for _ in range(INCREMENTS):
+        while True:
+            old = counter.load()
+            if counter.compare_and_swap(old, old + 1):
+                break  # CAS 成功
+
+if __name__ == "__main__":
+    ts = [threading.Thread(target=cas_worker) for _ in range(THREADS)]
+    for t in ts: t.start()
+    for t in ts: t.join()
+    print(f"counter = {counter.load()} (expected {THREADS * INCREMENTS})")
+</code></pre>
+<h2 id="完整專案級範例python"><a class="header" href="#完整專案級範例python">完整專案級範例（Python）</a></h2>
+<p>檔案：<code>examples/python/ch10.py</code></p>
+<pre><code class="language-bash">python3 examples/python/ch10.py
+</code></pre>
+<pre><code class="language-python">"""Chapter 10: CAS increment loop."""
+import threading
+
+
+class AtomicInt:
+    def __init__(self):
+        self.v = 0
+        self.m = threading.Lock()
+
+    def cas(self, expect: int, new: int) -&gt; bool:
+        with self.m:
+            if self.v == expect:
+                self.v = new
+                return True
+            return False
+
+
+if __name__ == "__main__":
+    a = AtomicInt()
+    for _ in range(5):
+        while True:
+            old = a.v
+            if a.cas(old, old + 1):
+                break
+    print("value=", a.v)
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch09-lock-family.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch11-deadlock.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch09-lock-family.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch11-deadlock.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
